@@ -17,12 +17,13 @@ docker compose up -d
 
 Для запуска без Docker вам понадобится PostgreSQL 16.
 - Запустите PostgreSQL и создайте базу warehouse_db.
-- Установите переменные в application.properties или переменные окружения:
+- Установите переменные в .env или переменные окружения:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/warehouse_db
-spring.datasource.username=postgres
-spring.datasource.password=пароль
+SPRING_DATASOURCE_URL=jdbc:postgresql://warehouse-db:5432/test_database_name
+SPRING_DATASOURCE_USERNAME=test_user_name
+SPRING_DATASOURCE_PASSWORD=test_user_password
+SPRING_DATASOURCE_DATABASE_NAME=test_database_name
 ```
 - Выполните команды:
 
