@@ -98,6 +98,7 @@ class ProductController(
     @Operation(summary = "Удаление существующего товара", description = "Удаляет существующий товар по его id.")
     fun deleteProduct(@PathVariable id: UUID): ResponseEntity<Unit> {
         productService.deleteProduct(id)
+        // TODO неочевидно что метод может возвращать 404, так как это сделано в GlobalExceptionHandler
         return ResponseEntity.noContent().build()
     }
 }

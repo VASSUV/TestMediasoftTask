@@ -7,6 +7,8 @@ import ru.vassuv.testmediasofttask.warehouse.model.dto.CreateProductRequestDto
 import ru.vassuv.testmediasofttask.warehouse.model.dto.ProductResponseDto
 import ru.vassuv.testmediasofttask.warehouse.model.dto.UpdateProductRequestDto
 
+// TODO возможно вынести все мапперы в отдельный object
+
 internal fun DomainProduct.toResponseDto(): ProductResponseDto = ProductResponseDto(
     id = this.id,
     name = this.name,

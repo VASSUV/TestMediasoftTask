@@ -46,6 +46,7 @@ class GlobalExceptionHandler {
         val message = ex.mostSpecificCause.message
 
         val userFriendlyMessage = when {
+            // Example:
             // message?.contains("unique_article") == true || message?.contains("products_article_key") == true ->
             //     "Товар с таким артикулом уже существует!"
             else -> "Ошибка целостности данных!"

@@ -24,22 +24,20 @@ class ProductDbo(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
 
-    @field:NotBlank(message = "Название товара не должно быть пустым")
+    @Column(nullable = false)
     var name: String,
 
     @Column(nullable = false, unique = true)
-    @field:NotBlank(message = "Артикул не должен быть пустым")
     var article: String,
 
+    @Column(nullable = true)
     var description: String? = null,
 
+    @Column(nullable = true)
     var category: String? = null,
 
-    @field:NotNull(message = "Цена должна быть указана")
-    @field:PositiveOrZero(message = "Цена должна быть >= 0")
     var price: BigDecimal,
 
-    @field:Min(value = 0, message = "Количество не может быть отрицательным")
     var quantity: Int,
 
     @Column(nullable = false)

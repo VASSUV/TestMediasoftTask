@@ -1,8 +1,5 @@
 package ru.vassuv.testmediasofttask.warehouse
 
-import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import ru.vassuv.testmediasofttask.warehouse.repository.ProductRepository
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
 import io.mockk.every
@@ -17,8 +14,6 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest
 class ProductServiceTest {
 
     private val repository = mockk<ProductRepository>()

@@ -60,7 +60,6 @@ class ProductControllerTest(
         }
     }
 
-    // TODO тест падает, разобраться
     @Test
     fun `should return validation errors when creating invalid product`() {
         val invalidDto = CreateProductRequestDto("", "", null, null, BigDecimal(-1), -5)

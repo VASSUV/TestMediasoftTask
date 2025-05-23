@@ -4,11 +4,13 @@ import ru.vassuv.testmediasofttask.warehouse.model.dbo.ProductDbo
 import ru.vassuv.testmediasofttask.warehouse.model.domain.CreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.model.domain.DomainProduct
 import ru.vassuv.testmediasofttask.warehouse.model.domain.UpdatedProduct
-import ru.vassuv.testmediasofttask.warehouse.model.dto.UpdateProductRequestDto
 import java.time.LocalDateTime
 
+// TODO возможно вынести все мапперы в отдельный object
+
 internal fun ProductDbo.toDomain(): DomainProduct = DomainProduct(
-    id = this.id!!,
+    // TODO будет ошибка если id==null, но если берем из БД, то всегда существует
+    id = requireNotNull(this.id) { "Id не должен быть null у существующего товара." },
     name = this.name,
     article = this.article,
     description = this.description,
