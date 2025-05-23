@@ -58,7 +58,8 @@ class ProductService(
      */
     fun createProduct(product: CreatedProduct): DomainProduct {
         val isExistArticle = productRepository.findByArticle(product.article) != null
-        if (isExistArticle) throw ProductIsExistWithArticleException()
+        if (isExistArticle)
+            throw ProductIsExistWithArticleException()
         return productRepository.save(product.toDbo(LocalDateTime.now())).toDomain()
     }
 

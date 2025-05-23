@@ -5,9 +5,9 @@ services:
     image: postgres:16-alpine
     container_name: warehouse-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: warehouse_db
+      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      POSTGRES_DB: ${SPRING_DATASOURCE_DATABASE_NAME}
     ports:
       - "5432:5432"
     volumes:
@@ -17,9 +17,9 @@ services:
     image: warehouse-app:latest
     container_name: warehouse-app
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://warehouse-db:5432/warehouse_db
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
     ports:
       - "8080:8080"
     depends_on:

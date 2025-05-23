@@ -24,10 +24,6 @@ class ProductServiceTest {
     private val repository = mockk<ProductRepository>()
     private val service = ProductService(repository)
 
-    /**
-     * TODO
-     *
-     */
     @Test
     fun `should return product by id`() {
         val id = UUID.randomUUID()

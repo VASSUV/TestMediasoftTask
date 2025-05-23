@@ -3,12 +3,15 @@ package ru.vassuv.testmediasofttask.warehouse
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import io.mockk.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.post
 import ru.vassuv.testmediasofttask.warehouse.controller.ProductController
+import ru.vassuv.testmediasofttask.warehouse.exception.handler.GlobalExceptionHandler
 import ru.vassuv.testmediasofttask.warehouse.model.domain.CreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.model.domain.DomainProduct
 import ru.vassuv.testmediasofttask.warehouse.model.dto.CreateProductRequestDto
@@ -22,10 +25,11 @@ import kotlin.test.Test
  * Интеграционные тесты REST-контроллера для управления товарами.
  */
 @WebMvcTest(ProductController::class)
+@Import(GlobalExceptionHandler::class)
 class ProductControllerTest(
     @Autowired val mockMvc: MockMvc
 ) {
-    @MockkBean
+    @MockkBean()
     lateinit var productService: ProductService
 
     @Test
@@ -56,6 +60,7 @@ class ProductControllerTest(
         }
     }
 
+    // TODO тест падает, разобраться
     @Test
     fun `should return validation errors when creating invalid product`() {
         val invalidDto = CreateProductRequestDto("", "", null, null, BigDecimal(-1), -5)
@@ -70,5 +75,6 @@ class ProductControllerTest(
             jsonPath("$.price") { exists() }
             jsonPath("$.quantity") { exists() }
         }
+        verify(exactly = 0) { productService.createProduct(any()) }
     }
 }
