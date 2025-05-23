@@ -1,0 +1,12 @@
+package ru.vassuv.testmediasofttask.warehouse.model.domain
+
+import java.math.BigDecimal
+
+data class CreatedProduct(
+    val name: String,
+    val article: String,
+    val description: String?,
+    val category: String?,
+    val price: BigDecimal,
+    val quantity: Int
+)

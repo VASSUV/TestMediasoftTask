@@ -1,9 +1,10 @@
 package ru.vassuv.testmediasofttask.warehouse.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
-import ru.vassuv.testmediasofttask.warehouse.model.Product
+import org.springframework.data.repository.PagingAndSortingRepository
+import ru.vassuv.testmediasofttask.warehouse.model.dbo.ProductDbo
 import java.util.UUID
 
-interface ProductRepository : JpaRepository<Product, UUID> {
-    fun findByArticle(article: String): Product?
+interface ProductRepository : JpaRepository<ProductDbo, UUID> {
+    fun findByArticle(article: String): ProductDbo?
 }
