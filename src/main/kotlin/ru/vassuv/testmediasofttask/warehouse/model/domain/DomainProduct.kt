@@ -4,6 +4,9 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 
+/**
+ * Доменная модель товара.
+ */
 data class DomainProduct(
     val id: UUID,
     val name: String,

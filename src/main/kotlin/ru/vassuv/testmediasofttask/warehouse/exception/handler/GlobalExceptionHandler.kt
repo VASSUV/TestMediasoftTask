@@ -10,9 +10,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductIsExistWithArticleException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
 
+/**
+ * Глобальный обработчик исключений.
+ * Перехватывает ошибки и возвращает пользователю удобные сообщения.
+ */
 @RestControllerAdvice
 class GlobalExceptionHandler {
 
+    /**
+     * Обрабатывает исключения валидации.
+     *
+     * @param ex Исключение, возникающее при ошибке валидации.
+     * @return Ответ с описанием ошибок.
+     */
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationExceptions(ex: MethodArgumentNotValidException): ResponseEntity<Map<String, String?>> {
         val errors = ex.bindingResult.allErrors.associate { error ->
@@ -22,6 +32,12 @@ class GlobalExceptionHandler {
         return ResponseEntity(errors, HttpStatus.BAD_REQUEST)
     }
 
+    /**
+     * Обрабатывает ошибки целостности данных (например, уникальность поля).
+     *
+     * @param ex Исключение нарушения ограничений БД.
+     * @return Ответ с описанием ошибки.
+     */
     @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDataIntegrityViolationException(
         ex: DataIntegrityViolationException
@@ -41,6 +57,12 @@ class GlobalExceptionHandler {
         )
     }
 
+    /**
+     * Обрабатывает ошибки отсутствия продукта в БД
+     *
+     * @param ex Исключение отсутствия продукта в БД
+     * @return Ответ с описанием ошибки.
+     */
     @ExceptionHandler(ProductNotFoundException::class)
     fun handleProductNotFoundException(ex: ProductNotFoundException): ResponseEntity<Map<String, String?>> {
         return ResponseEntity(
@@ -49,6 +71,12 @@ class GlobalExceptionHandler {
         )
     }
 
+    /**
+     * Обрабатывает ошибки существования продукта с уникальным артикулом
+     *
+     * @param ex Исключение существования продукта с уникальным артикулом
+     * @return Ответ с описанием ошибки.
+     */
     @ExceptionHandler(ProductIsExistWithArticleException::class)
     fun handleProductIsExistWithArticleException(ex: ProductIsExistWithArticleException): ResponseEntity<Map<String, String?>> {
         return ResponseEntity(

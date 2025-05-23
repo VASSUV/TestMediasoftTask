@@ -5,6 +5,10 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import ru.vassuv.testmediasofttask.warehouse.model.dbo.ProductDbo
 import java.util.UUID
 
+/**
+ * Репозиторий для выполнения операций над товарами в базе данных,
+ * где за счет интерфеса JPARepository добавляются CRUD операции к БД
+ */
 interface ProductRepository : JpaRepository<ProductDbo, UUID> {
     fun findByArticle(article: String): ProductDbo?
 }

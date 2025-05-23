@@ -13,5 +13,17 @@ services:
     volumes:
       - warehouse-data:/var/lib/postgresql/data
 
+  warehouse-app:
+    image: warehouse-app:latest
+    container_name: warehouse-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://warehouse-db:5432/warehouse_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      - warehouse-db
+
 volumes:
   warehouse-data:

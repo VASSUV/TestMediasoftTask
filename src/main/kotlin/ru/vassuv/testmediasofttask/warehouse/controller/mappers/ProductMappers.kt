@@ -19,8 +19,6 @@ internal fun DomainProduct.toResponseDto(): ProductResponseDto = ProductResponse
     createdAt = this.createdAt
 )
 
-
-
 internal fun CreateProductRequestDto.toDomain(): CreatedProduct = CreatedProduct(
     name = name,
     article = article,

@@ -14,6 +14,9 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 
+/**
+ * Сущность товара для хранения в базе данных.
+ */
 @Entity
 @Table(name = "products")
 class ProductDbo(

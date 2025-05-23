@@ -18,25 +18,57 @@ import ru.vassuv.testmediasofttask.warehouse.service.mappers.toDomain
 import java.time.LocalDateTime
 import java.util.UUID
 
+/**
+ * Сервис для управления товарами на складе.
+ *
+ * @property productRepository Репозиторий товаров.
+ */
 @Service
 class ProductService(
     private val productRepository: ProductRepository
 ) {
 
+    /**
+     * Получение списка товаров с пагинацией.
+     *
+     * @param page Номер страницы.
+     * @param size Количество элементов на странице.
+     * @return Страница с товарами в виде Domain-моделей.
+     */
     fun getProducts(page: Int, size: Int): Page<DomainProduct> {
         val pageable = PageRequest.of(page, size, Sort.by("createdAt").descending())
         return productRepository.findAll(pageable).map { it.toDomain() }
     }
 
+    /**
+     * Получение товара по идентификатору.
+     *
+     * @param id UUID товара.
+     * @return Найденный товар.
+     * @throws ProductNotFoundException Если товар не найден.
+     */
     fun getProductById(id: UUID): DomainProduct? =
         productRepository.findByIdOrNull(id)?.toDomain() ?: throw ProductNotFoundException(id)
 
+    /**
+     * Создание нового товара.
+     *
+     * @param product Доменная модель нового товара.
+     * @return Созданный товар.
+     */
     fun createProduct(product: CreatedProduct): DomainProduct {
         val isExistArticle = productRepository.findByArticle(product.article) != null
         if (isExistArticle) throw ProductIsExistWithArticleException()
         return productRepository.save(product.toDbo(LocalDateTime.now())).toDomain()
     }
 
+    /**
+     * Обновление существующего товара.
+     *
+     * @param id UUID товара.
+     * @param updatedProduct Доменная модель с обновленными данными.
+     * @return Обновленный товар или null, если не найден.
+     */
     @Transactional
     fun updateProduct(id: UUID, updatedProduct: UpdatedProduct): DomainProduct? {
         val existingProduct = productRepository.findByIdOrNull(id) ?: throw ProductNotFoundException(id)
@@ -44,6 +76,12 @@ class ProductService(
         return productRepository.save(existingProduct).toDomain()
     }
 
+    /**
+     * Удаление товара по идентификатору.
+     *
+     * @param id UUID товара.
+     * @return true, если удаление прошло успешно, иначе false.
+     */
     fun deleteProduct(id: UUID) {
         if (!productRepository.existsById(id)) throw ProductNotFoundException(id)
         productRepository.deleteById(id)
