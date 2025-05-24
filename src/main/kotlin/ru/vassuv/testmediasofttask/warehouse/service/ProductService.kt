@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductIsExistWithArticleException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
+import ru.vassuv.testmediasofttask.warehouse.model.dbo.ProductDbo
 import ru.vassuv.testmediasofttask.warehouse.model.domain.CreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.repository.ProductRepository
 import ru.vassuv.testmediasofttask.warehouse.model.domain.DomainProduct
@@ -15,6 +16,7 @@ import ru.vassuv.testmediasofttask.warehouse.model.domain.UpdatedProduct
 import ru.vassuv.testmediasofttask.warehouse.service.mappers.applyWith
 import ru.vassuv.testmediasofttask.warehouse.service.mappers.toDbo
 import ru.vassuv.testmediasofttask.warehouse.service.mappers.toDomain
+import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 
@@ -87,5 +89,33 @@ class ProductService(
     fun deleteProduct(id: UUID) {
         if (!productRepository.existsById(id)) throw ProductNotFoundException(id)
         productRepository.deleteById(id)
+    }
+
+    /**
+     * Получение всех товаров (не для API)
+     *
+     * @return список товаров
+     */
+    fun findAll(): List<ProductDbo> =
+        productRepository.findAll()
+
+    /**
+     * Сохранение всех товаров (не для API)
+     *
+     * @param products список сохраняемых продуктов
+     * @return список сохраненных продуктов
+     */
+    @Transactional
+    fun saveAll(products: List<ProductDbo>): List<ProductDbo> =
+        productRepository.saveAll(products)
+
+    /**
+     * Обновление цены всех товаров на определенную процентную величину
+     *
+     * @param percentage - величина изменения цены в процентах
+     */
+    @Transactional
+    fun updateAllPrices(percentage: BigDecimal) {
+        productRepository.updateAllPrices(percentage)
     }
 }
