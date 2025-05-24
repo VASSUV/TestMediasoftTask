@@ -32,6 +32,17 @@ SPRING_DATASOURCE_DATABASE_NAME=test_database_name
 ./gradlew bootRun
 ```
 
+- либо можно запустить в локальном профиле h2
+```bash
+- ./gradlew bootRun --args='--spring.profiles.active=local'
+```
+
+- И для доступа к консоли h2 спользовать ссылку (посмотреть параметры для входа можно в application-local.properties)
+
+```http request
+http://localhost:8080/h2-console
+```
+
 ## 🧪 Запуск тестов
 
 ```bash
