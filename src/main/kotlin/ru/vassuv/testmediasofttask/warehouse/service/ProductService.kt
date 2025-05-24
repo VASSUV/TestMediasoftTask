@@ -56,6 +56,7 @@ class ProductService(
      * @param product Доменная модель нового товара.
      * @return Созданный товар.
      */
+    @Transactional
     fun createProduct(product: CreatedProduct): DomainProduct {
         val isExistArticle = productRepository.findByArticle(product.article) != null // TODO заменить на existsByArticle, для эффективности
         if (isExistArticle)
