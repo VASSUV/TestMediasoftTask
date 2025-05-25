@@ -106,8 +106,8 @@ class ProductService(
      * @return список сохраненных продуктов
      */
     @Transactional
-    fun saveAll(products: List<ProductDbo>): List<ProductDbo> =
-        productRepository.saveAll(products)
+    fun saveAll(products: Sequence<ProductDbo>): List<ProductDbo> =
+        productRepository.saveAll(products.asIterable())
 
     /**
      * Обновление цены всех товаров на определенную процентную величину

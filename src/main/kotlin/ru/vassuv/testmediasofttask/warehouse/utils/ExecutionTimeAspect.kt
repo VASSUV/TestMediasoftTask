@@ -19,7 +19,7 @@ class ExecutionTimeAspect {
     @Around("@annotation(LogExecutionTime)")
     fun logExecutionTime(joinPoint: ProceedingJoinPoint): Any? {
         val startTime = System.currentTimeMillis()
-
+        log.info("Method ${joinPoint.signature} STARTED")
         val result = joinPoint.proceed() // выполнение метода
 
         val executionTime = System.currentTimeMillis() - startTime

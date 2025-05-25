@@ -22,6 +22,7 @@ class TransactionExecutionTimeAspect {
         val methodSignature = joinPoint.signature.toShortString()
         val startTime = System.currentTimeMillis()
 
+        log.info("Transactional Method ${joinPoint.signature} STARTED")
         val result = joinPoint.proceed()
 
         val executionTime = System.currentTimeMillis() - startTime

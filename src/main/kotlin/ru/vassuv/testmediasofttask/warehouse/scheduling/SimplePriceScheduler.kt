@@ -1,5 +1,6 @@
 package ru.vassuv.testmediasofttask.warehouse.scheduling
 
+import jakarta.transaction.Transactional
 import org.springframework.scheduling.annotation.Scheduled
 import ru.vassuv.testmediasofttask.warehouse.scheduling.config.SimplePriceChangeProperties
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
@@ -20,7 +21,7 @@ open class SimplePriceScheduler(
     @Scheduled(cron = "\${scheduling.price-change.simple.cron}") // каждую минуту
     @LogExecutionTime
     open fun updatePrices() {
-        val products = productService.findAll()
+        val products = productService.findAll().asSequence()
             .map { it.apply { price += price * properties.percent.toBigDecimal() } } // увеличение цены на 1%
 
         productService.saveAll(products)
