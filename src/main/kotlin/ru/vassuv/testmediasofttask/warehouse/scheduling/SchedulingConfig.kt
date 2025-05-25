@@ -11,6 +11,9 @@ import org.springframework.core.type.AnnotatedTypeMetadata
 import org.springframework.scheduling.annotation.EnableScheduling
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
 
+/**
+ * Конфигурация с шедулерами, не работает в local профиле
+ */
 @Configuration
 @EnableScheduling
 @Profile("!local") // не создаются в профиле local
@@ -26,6 +29,9 @@ class SchedulerConfig {
     fun optimizedScheduler(productService: ProductService) = OptimizedPriceScheduler(productService)
 }
 
+/**
+ * Условие для проверки на запуск простого шедулера
+ */
 class SimpleSchedulingCondition : Condition {
     override fun matches(context: ConditionContext, metadata: AnnotatedTypeMetadata): Boolean {
         val env = context.environment
@@ -35,6 +41,9 @@ class SimpleSchedulingCondition : Condition {
     }
 }
 
+/**
+ * Условие для проверки на запуск сложного, оптимизированного шедулера
+ */
 class OptimizedSchedulingCondition : Condition {
     override fun matches(context: ConditionContext, metadata: AnnotatedTypeMetadata): Boolean {
         val env = context.environment

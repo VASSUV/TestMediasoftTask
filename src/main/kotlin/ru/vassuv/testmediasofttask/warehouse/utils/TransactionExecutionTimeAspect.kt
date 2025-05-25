@@ -6,6 +6,10 @@ import org.aspectj.lang.annotation.Aspect
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
+/**
+ * Обработчик функции с аннотацией @Transactional
+ * Логирует время выполнения функции помеченной аннотацией @Transactional
+ */
 @Aspect
 @Component
 class TransactionExecutionTimeAspect {
