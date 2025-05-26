@@ -1,4 +1,4 @@
-package ru.vassuv.testmediasofttask.warehouse.model.dto
+package ru.vassuv.testmediasofttask.warehouse.controller.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
@@ -8,7 +8,7 @@ import java.util.UUID
 /**
  * DTO-ответ с данными товара.
  */
-data class ProductResponseDto(
+data class ProductResponse(
     @field:Schema(description = "Идентификатор товара")
     val id: UUID,
 

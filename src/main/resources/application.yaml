@@ -1,0 +1,58 @@
+spring:
+  config:
+    activate:
+      on-profile: default
+  application:
+    name: warehouse
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    #show-sql: true
+    #properties:
+    #  hibernate.format_sql: true
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+  aop:
+    auto: true
+
+app:
+  scheduling:
+    enabled: false
+
+scheduling:
+  optimization: true
+  price-change:
+    simple:
+      cron: "0 * * * * ?"
+      percent: -0.01f
+    optimized:
+      cron: "0 * * * * ?"
+      percent: 0.01f
+      batchSize: 100000
+      exportFilePath: export/products.csv
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: test
+  application:
+    name: warehouse
+
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop

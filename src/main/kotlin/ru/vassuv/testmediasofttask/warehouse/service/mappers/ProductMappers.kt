@@ -1,14 +1,13 @@
 package ru.vassuv.testmediasofttask.warehouse.service.mappers
 
-import ru.vassuv.testmediasofttask.warehouse.model.dbo.ProductDbo
-import ru.vassuv.testmediasofttask.warehouse.model.domain.CreatedProduct
-import ru.vassuv.testmediasofttask.warehouse.model.domain.DomainProduct
-import ru.vassuv.testmediasofttask.warehouse.model.domain.UpdatedProduct
+import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
+import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct
+import ru.vassuv.testmediasofttask.warehouse.service.model.ProductData
 import java.time.LocalDateTime
 
 // TODO возможно вынести все мапперы в отдельный object
 
-internal fun ProductDbo.toDomain(): DomainProduct = DomainProduct(
+internal fun ProductEntity.toDomain(): ProductData = ProductData(
     // TODO будет ошибка если id==null, но если берем из БД, то всегда существует
     id = requireNotNull(this.id) { "Id не должен быть null у существующего товара." },
     name = this.name,
@@ -23,7 +22,7 @@ internal fun ProductDbo.toDomain(): DomainProduct = DomainProduct(
 
 internal fun CreatedProduct.toDbo(
     createdAt: LocalDateTime
-): ProductDbo = ProductDbo(
+): ProductEntity = ProductEntity(
     name = name,
     article = article,
     description = description,
@@ -33,16 +32,3 @@ internal fun CreatedProduct.toDbo(
     quantityUpdatedAt = createdAt,
     createdAt = createdAt
 )
-
-internal fun ProductDbo.applyWith(
-    updatedProduct: UpdatedProduct,
-    quantityUpdatedAt: LocalDateTime
-): ProductDbo = apply {
-    name = updatedProduct.name
-    article = updatedProduct.article
-    description = updatedProduct.description
-    category = updatedProduct.category
-    price = updatedProduct.price
-    quantity = updatedProduct.quantity
-    this@apply.quantityUpdatedAt = quantityUpdatedAt
-}

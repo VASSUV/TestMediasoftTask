@@ -1,9 +1,10 @@
 plugins {
-	kotlin("jvm") version "1.9.25"
-	kotlin("plugin.spring") version "1.9.25"
+	kotlin("jvm") version "1.9.23"
+	kotlin("plugin.spring") version "1.9.23"
+	kotlin("plugin.jpa") version "1.9.23"
 	id("org.springframework.boot") version "3.4.6"
 	id("io.spring.dependency-management") version "1.1.7"
-	kotlin("plugin.jpa") version "1.9.25"
+	id("io.gitlab.arturbosch.detekt") version "1.23.6"
 }
 
 group = "ru.vassuv.testmediasofttask"
@@ -56,4 +57,13 @@ allOpen {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+detekt {
+	config.setFrom("config/detekt/detekt.yml")
+	buildUponDefaultConfig = true
+
+	source.setFrom("src/main/kotlin", "src/test/kotlin")
+
+	autoCorrect = true // для автоматического исправления простых проблем
 }

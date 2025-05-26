@@ -1,11 +1,11 @@
-package ru.vassuv.testmediasofttask.warehouse.model.domain
+package ru.vassuv.testmediasofttask.warehouse.service.model
 
 import java.math.BigDecimal
 
 /**
- * Доменная модель для создания нового товара.
+ * Доменная модель для обновления товара.
  */
-data class CreatedProduct(
+data class UpdatedProduct(
     val name: String,
     val article: String,
     val description: String?,

@@ -49,6 +49,12 @@ http://localhost:8080/h2-console
 ./gradlew test
 ```
 
+## Проверка правил kotlin detect
+
+```bash
+./gradlew detekt
+```
+
 ## Полезные ссылки
 
 Приложение доступно по адресу:

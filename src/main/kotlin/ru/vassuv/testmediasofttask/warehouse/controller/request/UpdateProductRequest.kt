@@ -1,4 +1,4 @@
-package ru.vassuv.testmediasofttask.warehouse.model.dto
+package ru.vassuv.testmediasofttask.warehouse.controller.request
 
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Min
@@ -8,9 +8,9 @@ import jakarta.validation.constraints.PositiveOrZero
 import java.math.BigDecimal
 
 /**
- * DTO для создания нового товара.
+ * DTO для обновления товара.
  */
-data class CreateProductRequestDto(
+data class UpdateProductRequest(
 
     @field:NotBlank(message = "Название товара не должно быть пустым")
     @field:Schema(description = "Название товара", example = "Телевизор")

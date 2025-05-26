@@ -1,18 +1,20 @@
 package ru.vassuv.testmediasofttask.warehouse
 
-import ru.vassuv.testmediasofttask.warehouse.repository.ProductRepository
+import ru.vassuv.testmediasofttask.warehouse.persist.repository.ProductRepository
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.springframework.data.repository.findByIdOrNull
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
-import ru.vassuv.testmediasofttask.warehouse.model.dbo.ProductDbo
+import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.*
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ProductServiceTest {
 
@@ -22,7 +24,7 @@ class ProductServiceTest {
     @Test
     fun `should return product by id`() {
         val id = UUID.randomUUID()
-        val entity = ProductDbo(
+        val entity = ProductEntity(
             id = id,
             name = "Product 1",
             article = "Art-001",

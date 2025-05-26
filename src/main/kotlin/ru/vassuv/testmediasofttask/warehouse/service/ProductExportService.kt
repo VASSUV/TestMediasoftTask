@@ -2,7 +2,7 @@ package ru.vassuv.testmediasofttask.warehouse.service
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import ru.vassuv.testmediasofttask.warehouse.model.dbo.ProductDbo
+import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
@@ -16,7 +16,7 @@ class ProductExportService {
 
     private val log = LoggerFactory.getLogger(ProductExportService::class.java)
 
-    fun exportProductsBatchToFile(products: List<ProductDbo>, filePath: Path) {
+    fun exportProductsBatchToFile(products: List<ProductEntity>, filePath: Path) {
         Files.createDirectories(filePath.parent)
         Files.newBufferedWriter(filePath, StandardOpenOption.CREATE, StandardOpenOption.APPEND).use { writer ->
             products.forEach { product ->

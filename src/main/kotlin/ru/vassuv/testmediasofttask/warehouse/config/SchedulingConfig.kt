@@ -1,4 +1,4 @@
-package ru.vassuv.testmediasofttask.warehouse.scheduling.config
+package ru.vassuv.testmediasofttask.warehouse.config
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.core.type.AnnotatedTypeMetadata
 import org.springframework.scheduling.annotation.EnableScheduling
+import ru.vassuv.testmediasofttask.warehouse.config.properties.OptimizedPriceChangeProperties
+import ru.vassuv.testmediasofttask.warehouse.config.properties.SchedulingProperties
+import ru.vassuv.testmediasofttask.warehouse.config.properties.SimplePriceChangeProperties
 import ru.vassuv.testmediasofttask.warehouse.scheduling.OptimizedPriceScheduler
 import ru.vassuv.testmediasofttask.warehouse.scheduling.SimplePriceScheduler
 import ru.vassuv.testmediasofttask.warehouse.service.ProductExportService
@@ -25,13 +28,13 @@ class SchedulerConfig {
     @Bean
     @ConditionalOnProperty(name = ["scheduling.optimization"], havingValue = "false")
     @Conditional(SimpleSchedulingCondition::class)
-    fun simpleScheduler(properties: SimplePriceChangeProperties, productService: ProductService) =
+    fun simpleScheduler(properties: SchedulingProperties, productService: ProductService) =
         SimplePriceScheduler(properties, productService)
 
     @Bean("optimizedScheduler")
     @Conditional(OptimizedSchedulingCondition::class)
     fun optimizedScheduler(
-        properties: OptimizedPriceChangeProperties,
+        properties: SchedulingProperties,
         productService: ProductService,
         productExportService: ProductExportService,
     ) = OptimizedPriceScheduler(properties, productService, productExportService)

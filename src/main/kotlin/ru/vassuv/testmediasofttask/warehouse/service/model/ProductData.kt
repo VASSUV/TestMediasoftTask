@@ -1,4 +1,4 @@
-package ru.vassuv.testmediasofttask.warehouse.model.domain
+package ru.vassuv.testmediasofttask.warehouse.service.model
 
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -7,7 +7,7 @@ import java.util.UUID
 /**
  * Доменная модель товара.
  */
-data class DomainProduct(
+data class ProductData(
     val id: UUID,
     val name: String,
     val article: String,

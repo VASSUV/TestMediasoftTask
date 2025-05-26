@@ -12,9 +12,9 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.post
 import ru.vassuv.testmediasofttask.warehouse.controller.ProductController
 import ru.vassuv.testmediasofttask.warehouse.exception.handler.GlobalExceptionHandler
-import ru.vassuv.testmediasofttask.warehouse.model.domain.CreatedProduct
-import ru.vassuv.testmediasofttask.warehouse.model.domain.DomainProduct
-import ru.vassuv.testmediasofttask.warehouse.model.dto.CreateProductRequestDto
+import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct
+import ru.vassuv.testmediasofttask.warehouse.service.model.ProductData
+import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductRequest
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
 import java.math.BigDecimal
 import java.time.LocalDateTime
@@ -34,9 +34,9 @@ class ProductControllerTest(
 
     @Test
     fun `should create new product`() {
-        val requestDto = CreateProductRequestDto("Name", "Article-123", null, null, BigDecimal(100), 10)
+        val requestDto = CreateProductRequest("Name", "Article-123", null, null, BigDecimal(100), 10)
         val domainProduct = CreatedProduct("Name", "Article-123", null, null, BigDecimal(100), 10)
-        val createdProduct = DomainProduct(
+        val createdProduct = ProductData(
             UUID.randomUUID(),
             "Name",
             "Article-123",
@@ -62,7 +62,7 @@ class ProductControllerTest(
 
     @Test
     fun `should return validation errors when creating invalid product`() {
-        val invalidDto = CreateProductRequestDto("", "", null, null, BigDecimal(-1), -5)
+        val invalidDto = CreateProductRequest("", "", null, null, BigDecimal(-1), -5)
 
         mockMvc.post("/api/products") {
             contentType = MediaType.APPLICATION_JSON

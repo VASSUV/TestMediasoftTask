@@ -4,14 +4,25 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
-import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toDomain
+import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toUpdatedProduct
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toResponseDto
-import ru.vassuv.testmediasofttask.warehouse.model.dto.CreateProductRequestDto
-import ru.vassuv.testmediasofttask.warehouse.model.dto.ProductResponseDto
-import ru.vassuv.testmediasofttask.warehouse.model.dto.UpdateProductRequestDto
+import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductResponse
+import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateProductRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toCreatedProduct
+import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toUuidResponse
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
 import java.util.UUID
 
@@ -31,17 +42,12 @@ class ProductController(
     /**
      * Получение списка товаров с пагинацией.
      *
-     * @param page Номер страницы (начинается с 0).
-     * @param size Количество элементов на странице.
+     * @param pageable Параметры для постраничной загрузки
      * @return Страница с товарами.
      */
     @GetMapping
     @Operation(summary = "Получение списка товаров", description = "Возвращает список всех товаров с пагинацией.")
-    fun getProducts(
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "10") size: Int
-    ): Page<ProductResponseDto> =
-        productService.getProducts(page, size).map { it.toResponseDto() }
+    fun getProducts(pageable: Pageable) = productService.getProducts(pageable).map { it.toResponseDto() }
 
     /**
      * Получение товара по идентификатору.
@@ -51,11 +57,7 @@ class ProductController(
      */
     @GetMapping("/{id}")
     @Operation(summary = "Получение товара", description = "Получение одного товара по его ID")
-    fun getProductById(@PathVariable id: UUID): ResponseEntity<ProductResponseDto> =
-        productService.getProductById(id)
-            ?.toResponseDto()
-            ?.let { ResponseEntity.ok(it) }
-            ?: ResponseEntity.notFound().build()
+    fun getProductById(@PathVariable id: UUID) = productService.getProductById(id).toResponseDto()
 
     /**
      * Создание нового товара.
@@ -65,10 +67,9 @@ class ProductController(
      */
     @PostMapping
     @Operation(summary = "Создание нового товара", description = "Создает новый товар с указанными параметрами.")
-    fun createProduct(@Valid @RequestBody request: CreateProductRequestDto): ResponseEntity<ProductResponseDto> =
-        ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(productService.createProduct(request.toDomain()).toResponseDto())
+    fun createProduct(@Valid @RequestBody request: CreateProductRequest) = ResponseEntity
+        .status(HttpStatus.CREATED)
+        .body(productService.createProduct(request.toCreatedProduct()).toUuidResponse())
 
     /**
      * Обновление товара по идентификатору.
@@ -78,27 +79,21 @@ class ProductController(
      * @return Обновленный товар или статус 404.
      */
     @PutMapping("/{id}")
-    @Operation(summary = "Обновление существующего товара", description = "Обновляет существующий товар с указанными параметрами по его id.")
+    @Operation(
+        summary = "Обновление существующего товара",
+        description = "Обновляет существующий товар с указанными параметрами по его id."
+    )
     fun updateProduct(
         @PathVariable id: UUID,
-        @Valid @RequestBody request: UpdateProductRequestDto
-    ): ResponseEntity<ProductResponseDto> =
-        productService.updateProduct(id, request.toDomain())
-            ?.toResponseDto()
-            ?.let { ResponseEntity.ok(it) }
-            ?: ResponseEntity.notFound().build()
+        @Valid @RequestBody request: UpdateProductRequest
+    ) = productService.updateProduct(id, request.toUpdatedProduct()) // TODO 200 -> 204
 
     /**
      * Удаление товара по идентификатору.
      *
      * @param id UUID товара.
-     * @return Статус успешного удаления (204) или 404.
      */
     @DeleteMapping("/{id}")
     @Operation(summary = "Удаление существующего товара", description = "Удаляет существующий товар по его id.")
-    fun deleteProduct(@PathVariable id: UUID): ResponseEntity<Unit> {
-        productService.deleteProduct(id)
-        // TODO неочевидно что метод может возвращать 404, так как это сделано в GlobalExceptionHandler
-        return ResponseEntity.noContent().build()
-    }
+    fun deleteProduct(@PathVariable id: UUID) = productService.deleteProduct(id) // TODO 200 -> 204
 }

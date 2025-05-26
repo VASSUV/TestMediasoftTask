@@ -2,18 +2,18 @@ package ru.vassuv.testmediasofttask.warehouse.service
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductIsExistWithArticleException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
-import ru.vassuv.testmediasofttask.warehouse.model.dbo.ProductDbo
-import ru.vassuv.testmediasofttask.warehouse.model.domain.CreatedProduct
-import ru.vassuv.testmediasofttask.warehouse.repository.ProductRepository
-import ru.vassuv.testmediasofttask.warehouse.model.domain.DomainProduct
-import ru.vassuv.testmediasofttask.warehouse.model.domain.UpdatedProduct
-import ru.vassuv.testmediasofttask.warehouse.service.mappers.applyWith
+import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
+import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct
+import ru.vassuv.testmediasofttask.warehouse.persist.repository.ProductRepository
+import ru.vassuv.testmediasofttask.warehouse.service.model.ProductData
+import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedProduct
 import ru.vassuv.testmediasofttask.warehouse.service.mappers.toDbo
 import ru.vassuv.testmediasofttask.warehouse.service.mappers.toDomain
 import java.math.BigDecimal
@@ -34,12 +34,10 @@ class ProductService(
     /**
      * Получение списка товаров с пагинацией.
      *
-     * @param page Номер страницы.
-     * @param size Количество элементов на странице.
+     * @param pageable параметры для постранично загрузки
      * @return Страница с товарами в виде Domain-моделей.
      */
-    fun getProducts(page: Int, size: Int): Page<DomainProduct> {
-        val pageable = PageRequest.of(page, size, Sort.by("createdAt").descending())
+    fun getProducts(pageable: Pageable): Page<ProductData> {
         return productRepository.findAll(pageable).map { it.toDomain() }
     }
 
@@ -50,7 +48,7 @@ class ProductService(
      * @return Найденный товар.
      * @throws ProductNotFoundException Если товар не найден.
      */
-    fun getProductById(id: UUID): DomainProduct? =
+    fun getProductById(id: UUID): ProductData =
         productRepository.findByIdOrNull(id)?.toDomain() ?: throw ProductNotFoundException(id)
 
     /**
@@ -60,11 +58,13 @@ class ProductService(
      * @return Созданный товар.
      */
     @Transactional
-    fun createProduct(product: CreatedProduct): DomainProduct {
-        val isExistArticle = productRepository.findByArticle(product.article) != null // TODO заменить на existsByArticle, для эффективности
+    fun createProduct(product: CreatedProduct): UUID {
+        // TODO заменить на existsByArticle, для эффективности
+        val isExistArticle = productRepository.findByArticle(product.article) != null
         if (isExistArticle)
             throw ProductIsExistWithArticleException()
-        return productRepository.save(product.toDbo(LocalDateTime.now())).toDomain()
+
+        return productRepository.save(product.toDbo(LocalDateTime.now())).id!!
     }
 
     /**
@@ -75,10 +75,18 @@ class ProductService(
      * @return Обновленный товар или null, если не найден.
      */
     @Transactional
-    fun updateProduct(id: UUID, updatedProduct: UpdatedProduct): DomainProduct? {
+    fun updateProduct(id: UUID, updatedProduct: UpdatedProduct) {
         val existingProduct = productRepository.findByIdOrNull(id) ?: throw ProductNotFoundException(id)
-        existingProduct.applyWith(updatedProduct, LocalDateTime.now())
-        return productRepository.save(existingProduct).toDomain()
+        existingProduct.apply {
+            existingProduct.name = updatedProduct.name
+            existingProduct.article = updatedProduct.article
+            existingProduct.description = updatedProduct.description
+            existingProduct.category = updatedProduct.category
+            existingProduct.price = updatedProduct.price
+            existingProduct.quantity = updatedProduct.quantity
+            existingProduct.quantityUpdatedAt = LocalDateTime.now()
+        }
+        productRepository.save(existingProduct)
     }
 
     /**
@@ -87,6 +95,7 @@ class ProductService(
      * @param id UUID товара.
      * @return true, если удаление прошло успешно, иначе false.
      */
+    @Transactional(readOnly = true)
     fun deleteProduct(id: UUID) {
         if (!productRepository.existsById(id)) throw ProductNotFoundException(id)
         productRepository.deleteById(id)
@@ -97,7 +106,7 @@ class ProductService(
      *
      * @return список товаров
      */
-    fun findAll(): List<ProductDbo> =
+    fun findAll(): List<ProductEntity> =
         productRepository.findAll()
 
     /**
@@ -107,18 +116,8 @@ class ProductService(
      * @return список сохраненных продуктов
      */
     @Transactional
-    fun saveAll(products: Sequence<ProductDbo>): List<ProductDbo> =
+    fun saveAll(products: Sequence<ProductEntity>): List<ProductEntity> =
         productRepository.saveAll(products.asIterable())
-
-    /**
-     * Обновление цены всех товаров на определенную процентную величину
-     *
-     * @param percentage - величина изменения цены в процентах
-     */
-    @Transactional
-    fun updateAllPrices(percentage: BigDecimal) {
-        productRepository.updateAllPrices(percentage)
-    }
 
     /**
      * Обновление цены все товаров батчами
@@ -131,7 +130,7 @@ class ProductService(
     fun updatePricesInBatches(
         percent: BigDecimal,
         batchSize: Int,
-        batchConsumer: (List<ProductDbo>) -> Unit
+        batchConsumer: (List<ProductEntity>) -> Unit
     ) {
         productRepository.streamAll().use { stream ->
             stream.asSequence().chunked(batchSize).forEach { batch ->
