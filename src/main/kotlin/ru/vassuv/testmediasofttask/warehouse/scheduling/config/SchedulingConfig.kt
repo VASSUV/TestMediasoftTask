@@ -11,6 +11,7 @@ import org.springframework.core.type.AnnotatedTypeMetadata
 import org.springframework.scheduling.annotation.EnableScheduling
 import ru.vassuv.testmediasofttask.warehouse.scheduling.OptimizedPriceScheduler
 import ru.vassuv.testmediasofttask.warehouse.scheduling.SimplePriceScheduler
+import ru.vassuv.testmediasofttask.warehouse.service.ProductExportService
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
 
 /**
@@ -29,8 +30,11 @@ class SchedulerConfig {
 
     @Bean("optimizedScheduler")
     @Conditional(OptimizedSchedulingCondition::class)
-    fun optimizedScheduler(properties: OptimizedPriceChangeProperties, productService: ProductService) =
-        OptimizedPriceScheduler(properties, productService)
+    fun optimizedScheduler(
+        properties: OptimizedPriceChangeProperties,
+        productService: ProductService,
+        productExportService: ProductExportService,
+    ) = OptimizedPriceScheduler(properties, productService, productExportService)
 }
 
 /**

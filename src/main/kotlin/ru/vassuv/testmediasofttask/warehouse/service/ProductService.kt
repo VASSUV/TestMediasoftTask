@@ -19,6 +19,7 @@ import ru.vassuv.testmediasofttask.warehouse.service.mappers.toDomain
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
+import kotlin.streams.asSequence
 
 /**
  * Сервис для управления товарами на складе.
@@ -117,5 +118,27 @@ class ProductService(
     @Transactional
     fun updateAllPrices(percentage: BigDecimal) {
         productRepository.updateAllPrices(percentage)
+    }
+
+    /**
+     * Обновление цены все товаров батчами
+     *
+     * @param percent - величина изменения цены в процентах
+     * @param batchSize - размер батча
+     * @param batchConsumer - колбэк для постобработки батча
+     */
+    @Transactional
+    fun updatePricesInBatches(
+        percent: BigDecimal,
+        batchSize: Int,
+        batchConsumer: (List<ProductDbo>) -> Unit
+    ) {
+        productRepository.streamAll().use { stream ->
+            stream.asSequence().chunked(batchSize).forEach { batch ->
+                batch.forEach { it.price *= (BigDecimal.ONE + percent) }
+                productRepository.saveAll(batch)
+                batchConsumer(batch)
+            }
+        }
     }
 }

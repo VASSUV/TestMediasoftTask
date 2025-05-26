@@ -11,5 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties(prefix = "scheduling.price-change.optimized")
 data class OptimizedPriceChangeProperties(
     var cron: String = "",
-    var percent: Float = 0f
+    var percent: Float = 0f,
+    var batchSize: Int = Int.MAX_VALUE,
+    var exportFilePath: String = "",
 )
