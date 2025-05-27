@@ -30,15 +30,15 @@ class ProductEntity(
     var description: String? = null,
 
     @Column(nullable = true)
-    var category: String? = null,
+    var category: String? = null, // TODO Enum
 
     var price: BigDecimal,
 
-    var quantity: Int,
+    var quantity: Int, // TODO BigDecimal
 
     @Column(nullable = false)
-    var quantityUpdatedAt: LocalDateTime = LocalDateTime.now(),
+    var quantityUpdatedAt: LocalDateTime = LocalDateTime.now(), // TODO ZonedDateTime
 
     @Column(nullable = false, updatable = false)
-    var createdAt: LocalDateTime = LocalDateTime.now()
+    var createdAt: LocalDateTime = LocalDateTime.now() // TODO ZonedDateTime и по заданию дата нужна LocalDate,  в бд date(h2 может не знать)
 )

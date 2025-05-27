@@ -21,16 +21,22 @@ import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.test.Test
 
+
+// TODO раскидать по пакетам
+
+// TODO Здесь проверить только валидации и успешный ответ
+// TODO должен быть лекговесным
+
 /**
  * Интеграционные тесты REST-контроллера для управления товарами.
  */
 @WebMvcTest(ProductController::class)
 @Import(GlobalExceptionHandler::class)
 class ProductControllerTest(
-    @Autowired val mockMvc: MockMvc
+    @Autowired val mockMvc: MockMvc // TODO Собрать mvc через билдер, add ExceptHandler и все что понадобится
 ) {
     @MockkBean()
-    lateinit var productService: ProductService
+    lateinit var productService: ProductService // TODO найминг mock или не mock указывать
 
     @Test
     fun `should create new product`() {
@@ -48,7 +54,7 @@ class ProductControllerTest(
             LocalDateTime.now()
         )
 
-        every { productService.createProduct(domainProduct) } returns createdProduct
+        every { productService.createProduct(domainProduct) } returns createdProduct.id
 
         mockMvc.post("/api/products") {
             contentType = MediaType.APPLICATION_JSON

@@ -27,9 +27,11 @@
             <column name="price" type="numeric(19,2)">
                 <constraints nullable="false"/>
             </column>
+            <!--     TODO    numeric   -->
             <column name="quantity" type="int">
                 <constraints nullable="false"/>
             </column>
+<!--     TODO     TimeStampt  with time zone   -->
             <column name="quantity_updated_at" type="timestamp">
                 <constraints nullable="false"/>
             </column>
@@ -43,3 +45,5 @@
         </rollback>
     </changeSet>
 </databaseChangeLog>
+
+<!-- TODO add comments to column -->

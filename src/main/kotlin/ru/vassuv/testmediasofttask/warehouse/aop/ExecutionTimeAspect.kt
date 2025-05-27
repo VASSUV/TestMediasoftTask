@@ -1,4 +1,4 @@
-package ru.vassuv.testmediasofttask.warehouse.utils
+package ru.vassuv.testmediasofttask.warehouse.aop
 
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around

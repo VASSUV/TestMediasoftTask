@@ -1,4 +1,4 @@
-package ru.vassuv.testmediasofttask.warehouse.utils
+package ru.vassuv.testmediasofttask.warehouse.aop
 
 /**
  * Аннотация для логирования времени выполнения функции, которая помечена этой аннотацией

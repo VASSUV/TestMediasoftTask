@@ -21,7 +21,7 @@ internal fun ProductEntity.toDomain(): ProductData = ProductData(
 )
 
 internal fun CreatedProduct.toDbo(
-    createdAt: LocalDateTime
+    createdAt: LocalDateTime // TODO можно использовать @CreationTimestamp или в БД
 ): ProductEntity = ProductEntity(
     name = name,
     article = article,

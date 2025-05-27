@@ -10,6 +10,7 @@ import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
 import java.util.UUID
 
 // TODO возможно вынести все мапперы в отдельный object
+// Переименовать мапперы
 
 internal fun ProductData.toResponseDto() = ProductResponse(
     id = this.id,

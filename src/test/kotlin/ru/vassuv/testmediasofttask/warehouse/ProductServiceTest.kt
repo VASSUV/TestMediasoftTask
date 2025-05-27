@@ -18,15 +18,16 @@ import kotlin.test.assertNotNull
 
 class ProductServiceTest {
 
-    private val repository = mockk<ProductRepository>()
-    private val service = ProductService(repository)
+    private val repositoryMock = mockk<ProductRepository>() // mock
+    private val serviceUnderTest = ProductService(repositoryMock) // underTest
 
     @Test
     fun `should return product by id`() {
-        val id = UUID.randomUUID()
+        val expectedId = UUID.randomUUID() // TODO expectedId
+        val expectedName = "Product 1"
         val entity = ProductEntity(
-            id = id,
-            name = "Product 1",
+            id = expectedId,
+            name = expectedName,
             article = "Art-001",
             description = "Desc",
             category = "Cat",
@@ -36,14 +37,14 @@ class ProductServiceTest {
             createdAt = LocalDateTime.now()
         )
 
-        every { repository.findByIdOrNull(id) } returns entity
+        every { repositoryMock.findByIdOrNull(expectedId) } returns entity
 
-        val result = service.getProductById(id)
+        val actual = serviceUnderTest.getProductById(expectedId)// TODO actual
 
-        assertNotNull(result)
-        assertEquals("Product 1", result?.name)
+        assertNotNull(actual)
+        assertEquals(expectedName, actual.name)
 
-        verify(exactly = 1) { repository.findByIdOrNull(id) }
+        verify(exactly = 1 /*Todo не обязательно */) { repositoryMock.findByIdOrNull(expectedId) }
     }
 
 
@@ -51,13 +52,13 @@ class ProductServiceTest {
     fun `should throw exception if product not found`() {
         val id = UUID.randomUUID()
 
-        every { repository.findByIdOrNull(id) } returns null
+        every { repositoryMock.findByIdOrNull(id) } returns null
 
         assertThrows(ProductNotFoundException::class.java) {
-            service.getProductById(id)
+            serviceUnderTest.getProductById(id)
         }
 
-        verify(exactly = 1) { repository.findByIdOrNull(id) }
+        verify(exactly = 1) { repositoryMock.findByIdOrNull(id) }
     }
 
 }

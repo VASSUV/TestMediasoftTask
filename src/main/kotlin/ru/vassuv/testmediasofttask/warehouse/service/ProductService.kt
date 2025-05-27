@@ -1,9 +1,7 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
-import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -79,7 +77,7 @@ class ProductService(
         val existingProduct = productRepository.findByIdOrNull(id) ?: throw ProductNotFoundException(id)
         existingProduct.apply {
             existingProduct.name = updatedProduct.name
-            existingProduct.article = updatedProduct.article
+            existingProduct.article = updatedProduct.article // TODO этот артикл тоже проверять в бд
             existingProduct.description = updatedProduct.description
             existingProduct.category = updatedProduct.category
             existingProduct.price = updatedProduct.price

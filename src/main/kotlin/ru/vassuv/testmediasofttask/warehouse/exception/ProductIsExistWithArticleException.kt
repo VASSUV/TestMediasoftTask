@@ -8,3 +8,5 @@ import org.springframework.web.bind.annotation.ResponseStatus
  */
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 class ProductIsExistWithArticleException: RuntimeException("Товар с таким артикулом уже существует")
+
+// TODO ProductExistsWithArticleException

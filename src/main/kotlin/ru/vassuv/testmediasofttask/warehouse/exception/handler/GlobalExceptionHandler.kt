@@ -19,12 +19,13 @@ class GlobalExceptionHandler {
     /**
      * Обработка всех исключений приложения
      */
-    @ExceptionHandler(Exception::class)
+    @ExceptionHandler(Exception::class) // TODO обавить логироватние
     fun handleAllUncaughtException(ex: Exception): ResponseEntity<ApiError> {
         val annotationStatus = ex.resolveAnnotatedStatus() ?: HttpStatus.INTERNAL_SERVER_ERROR
         val statusCode = annotationStatus.value()
         val statusName = annotationStatus.name
         return ResponseEntity (ApiError(statusCode, statusName, ex.localizedMessage), annotationStatus)
+        // TODO должно работать с ApiError, перепроверить
     }
 
     /**
@@ -34,7 +35,7 @@ class GlobalExceptionHandler {
      * @return Ответ с описанием ошибок.
      */
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValidationExceptions(ex: MethodArgumentNotValidException): ResponseEntity<Map<String, String?>> {
+    fun handleValidationExceptions(ex: MethodArgumentNotValidException): ResponseEntity<Map<String, String?>> { // TODO ApiError
         val errors = ex.bindingResult.allErrors.associate { error ->
             val fieldName = (error as FieldError).field
             fieldName to error.defaultMessage
@@ -45,7 +46,7 @@ class GlobalExceptionHandler {
     /**
      * Поиск статуса из аннотации к ошибке
      *
-     * @param ex проверяемая ошибка
+     * @receiver Exception проверяемая ошибка
      * @return Статус указанный в аннотацие
      */
     private fun Exception.resolveAnnotatedStatus(): HttpStatus? =

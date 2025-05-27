@@ -3,7 +3,7 @@ package ru.vassuv.testmediasofttask.warehouse.scheduling
 import org.springframework.scheduling.annotation.Scheduled
 import ru.vassuv.testmediasofttask.warehouse.config.properties.SchedulingProperties
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
-import ru.vassuv.testmediasofttask.warehouse.utils.LogExecutionTime
+import ru.vassuv.testmediasofttask.warehouse.aop.LogExecutionTime
 
 /**
  * Шедулер изменения цены (простой)

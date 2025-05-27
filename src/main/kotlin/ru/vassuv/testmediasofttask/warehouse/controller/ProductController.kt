@@ -3,7 +3,6 @@ package ru.vassuv.testmediasofttask.warehouse.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.Valid
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -14,12 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toUpdatedProduct
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toResponseDto
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductRequest
-import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateProductRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toCreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toUuidResponse
@@ -67,6 +64,7 @@ class ProductController(
      */
     @PostMapping
     @Operation(summary = "Создание нового товара", description = "Создает новый товар с указанными параметрами.")
+    // TODO examples
     fun createProduct(@Valid @RequestBody request: CreateProductRequest) = ResponseEntity
         .status(HttpStatus.CREATED)
         .body(productService.createProduct(request.toCreatedProduct()).toUuidResponse())
