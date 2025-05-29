@@ -11,11 +11,3 @@ class WarehouseApplicationTests {
 		println()
 	}
 }
-
-/* TODO DataJpaTest
-    test container
-    попробовать в абстрактный вынести страт контейнера
-    предустановка теста данными из скрипта или из ресурса
-    update точно тестить
-
-* */

@@ -1,7 +1,9 @@
 package ru.vassuv.testmediasofttask.warehouse.service.model
 
+import ru.vassuv.testmediasofttask.warehouse.enums.ProductCategoryType
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.LocalDate
+import java.time.ZonedDateTime
 import java.util.UUID
 
 /**
@@ -12,9 +14,9 @@ data class ProductData(
     val name: String,
     val article: String,
     val description: String?,
-    val category: String?,
+    val category: ProductCategoryType?,
     val price: BigDecimal,
-    val quantity: Int,
-    val quantityUpdatedAt: LocalDateTime,
-    val createdAt: LocalDateTime
+    val quantity: BigDecimal,
+    val quantityUpdatedAt: ZonedDateTime,
+    val createdAt: LocalDate
 )

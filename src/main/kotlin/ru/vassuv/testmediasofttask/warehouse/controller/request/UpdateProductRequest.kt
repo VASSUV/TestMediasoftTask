@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.PositiveOrZero
+import ru.vassuv.testmediasofttask.warehouse.enums.ProductCategoryType
 import java.math.BigDecimal
 
 /**
@@ -23,8 +24,8 @@ data class UpdateProductRequest(
     @field:Schema(description = "Описание товара", example = "4K OLED телевизор")
     val description: String?,
 
-    @field:Schema(description = "Категория товара", example = "Электроника")
-    val category: String?,
+    @field:Schema(description = "Категория товара", example = "ELECTRONICS")
+    val category: ProductCategoryType?,
 
     @field:NotNull(message = "Цена должна быть указана")
     @field:PositiveOrZero(message = "Цена должна быть >= 0")
@@ -33,5 +34,5 @@ data class UpdateProductRequest(
 
     @field:Min(value = 0, message = "Количество не может быть отрицательным")
     @field:Schema(description = "Количество товара на складе", example = "15")
-    val quantity: Int
+    val quantity: BigDecimal
 )

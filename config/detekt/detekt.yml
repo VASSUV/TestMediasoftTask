@@ -141,11 +141,11 @@ complexity:
     threshold: 6
   NamedArguments:
     active: false
-    threshold: 3
+    threshold: 10
     ignoreArgumentsMatchingNames: false
   NestedBlockDepth:
     active: true
-    threshold: 4
+    threshold: 10
   NestedScopeFunctions:
     active: false
     threshold: 1

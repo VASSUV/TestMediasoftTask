@@ -3,12 +3,8 @@ package ru.vassuv.testmediasofttask.warehouse.service.mappers
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.service.model.ProductData
-import java.time.LocalDateTime
 
-// TODO возможно вынести все мапперы в отдельный object
-
-internal fun ProductEntity.toDomain(): ProductData = ProductData(
-    // TODO будет ошибка если id==null, но если берем из БД, то всегда существует
+internal fun ProductEntity.toProductData(): ProductData = ProductData(
     id = requireNotNull(this.id) { "Id не должен быть null у существующего товара." },
     name = this.name,
     article = this.article,
@@ -20,15 +16,12 @@ internal fun ProductEntity.toDomain(): ProductData = ProductData(
     createdAt = this.createdAt
 )
 
-internal fun CreatedProduct.toDbo(
-    createdAt: LocalDateTime // TODO можно использовать @CreationTimestamp или в БД
-): ProductEntity = ProductEntity(
+internal fun CreatedProduct.toProductEntity() = ProductEntity(
     name = name,
     article = article,
     description = description,
     category = category,
     price = price,
-    quantity = quantity,
-    quantityUpdatedAt = createdAt,
-    createdAt = createdAt
+    quantity = quantity
 )
+

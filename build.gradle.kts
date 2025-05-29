@@ -41,6 +41,9 @@ dependencies {
 	testImplementation("com.h2database:h2")
 	testImplementation("io.mockk:mockk:1.14.2")
 	testImplementation("com.ninja-squad:springmockk:4.0.2")
+	testImplementation("org.testcontainers:postgresql:1.19.1")
+	testImplementation("org.springframework.boot:spring-boot-testcontainers")
+	testImplementation("org.testcontainers:junit-jupiter")
 }
 
 kotlin {

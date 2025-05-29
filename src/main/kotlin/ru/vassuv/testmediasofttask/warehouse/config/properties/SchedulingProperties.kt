@@ -11,7 +11,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 @ConfigurationProperties(prefix = "scheduling")
 data class SchedulingProperties(
     var optimization: Boolean = false,
-    var priceChange: PriceChange? = null
+    var priceChange: PriceChange
 )
 
 /**
@@ -19,10 +19,12 @@ data class SchedulingProperties(
  *
  * @property simple - Параметры для Простого шедулера
  * @property optimized - Параметры для Оптимизированного шедулера
+ * @property entityManager - Параметры для шедулера работающего на EntityManager
  */
 class PriceChange(
-    val simple: SimplePriceChangeProperties? = null,
-    val optimized: OptimizedPriceChangeProperties? = null,
+    val simple: SimplePriceChangeProperties,
+    val optimized: OptimizedPriceChangeProperties,
+    val entityManager: EntityManagerPriceChangeProperties,
 )
 
 /**
@@ -30,10 +32,14 @@ class PriceChange(
  *
  * @property cron - запись времени выполнения как для cron
  * @property percent - величина изменения цены
+ * @property batchSize - величина пакета, для отправки изменений в бд порцией
+ * @property exportFilePath - путь до файла, в который будут записываться продукты
  */
 data class SimplePriceChangeProperties(
-    var cron: String = "",
-    var percent: Float = 0f
+    var cron: String,
+    var percent: Float,
+    var batchSize: Int,
+    var exportFilePath: String,
 )
 
 /**
@@ -41,10 +47,29 @@ data class SimplePriceChangeProperties(
  *
  * @property cron - запись времени выполнения как для cron
  * @property percent - величина изменения цены
+ * @property batchSize - величина пакета, для отправки изменений в бд порцией
+ * @property exportFilePath - путь до файла, в который будут записываться продукты
  */
 data class OptimizedPriceChangeProperties(
-    var cron: String = "",
-    var percent: Float = 0f,
-    var batchSize: Int = Int.MAX_VALUE,
-    var exportFilePath: String = "",
+    var cron: String,
+    var percent: Float,
+    var batchSize: Int,
+    var exportFilePath: String,
+)
+
+/**
+ * Параметры для шедулера работающего на EntityManager
+ *
+ * @property enabled - флаг включающий шедулер
+ * @property cron - запись времени выполнения как для cron
+ * @property percent - величина изменения цены
+ * @property batchSize - величина пакета, для отправки изменений в бд порцией
+ * @property exportFilePath - путь до файла, в который будут записываться продукты
+ */
+data class EntityManagerPriceChangeProperties(
+    var enabled: Boolean,
+    var cron: String,
+    var percent: Float,
+    var batchSize: Int,
+    var exportFilePath: String,
 )

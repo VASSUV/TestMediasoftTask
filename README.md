@@ -33,10 +33,10 @@ docker ps
 - Установите переменные в .env или переменные окружения:
 
 ```properties
-SPRING_DATASOURCE_URL=jdbc:postgresql://warehouse-db:5432/test_database_name
+SPRING_DATASOURCE_URL=jdbc:postgresql://warehouse-db:5432/warehouse_db
 SPRING_DATASOURCE_USERNAME=test_user_name
 SPRING_DATASOURCE_PASSWORD=test_user_password
-SPRING_DATASOURCE_DATABASE_NAME=test_database_name
+SPRING_DATASOURCE_DATABASE_NAME=warehouse_db
 ```
 - Выполните команды:
 

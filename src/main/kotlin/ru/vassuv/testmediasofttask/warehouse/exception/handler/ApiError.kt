@@ -16,6 +16,7 @@ data class ApiError(
     val status: Int,
     val error: String,
     val message: String?,
+    val classPath: String,
+    val originalMessage: String? = null,
     val timestamp: LocalDateTime = LocalDateTime.now(),
-    // TODO source class path
 )

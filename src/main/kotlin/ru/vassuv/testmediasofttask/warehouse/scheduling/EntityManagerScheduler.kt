@@ -1,0 +1,76 @@
+package ru.vassuv.testmediasofttask.warehouse.scheduling
+
+import jakarta.persistence.EntityManager
+import org.slf4j.LoggerFactory
+import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.transaction.annotation.Transactional
+import ru.vassuv.testmediasofttask.warehouse.aop.LogExecutionTime
+import ru.vassuv.testmediasofttask.warehouse.config.properties.SchedulingProperties
+import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
+import java.io.BufferedWriter
+import java.io.File
+import java.io.FileWriter
+import kotlin.use
+
+open class EntityManagerScheduler(
+    private val entityManager: EntityManager,
+    private val schedulingProperties: SchedulingProperties,
+) {
+    private val log = LoggerFactory.getLogger(EntityManagerScheduler::class.java)
+
+    @Transactional
+    @Scheduled(cron = "\${scheduling.price-change.simple.cron}") // каждую минуту
+    @LogExecutionTime
+    open fun updateAllPricesBatch() {
+        log.info("EntityManagerScheduler. Начал обновлять цену")
+        val entityManagerProps = schedulingProperties.priceChange.entityManager
+        val percent = entityManagerProps.percent.toBigDecimal()
+        val exportFilePath = entityManagerProps.exportFilePath.ifEmpty { error("Export file path parameter is empty") }
+        val pageSize = entityManagerProps.batchSize
+        val file = File(exportFilePath)
+
+        file.parentFile?.run {
+            if (!exists()) mkdirs()
+        }
+
+        val bufferedWriter = BufferedWriter(FileWriter(exportFilePath, true))
+        bufferedWriter.use { logFile ->
+
+            var offset = 0
+            var count = 0
+            var page = 0
+
+            while (true) {
+                // 1. Получаем пачку сущностей
+                val products = entityManager.createQuery(
+                    "SELECT p FROM ProductEntity p",
+                    ProductEntity::class.java
+                )
+                    .setFirstResult(offset)
+                    .setMaxResults(pageSize)
+                    .resultList
+
+                if (products.isEmpty()) break
+
+                // 2. Меняем цену
+                products.forEach {
+                    it.price = it.price + it.price * percent
+                    it.apply {
+                        logFile.write("$id $name $price $description $article $createdAt\n")
+                        count++
+                    }
+                }
+
+                // 3. Сохраняем изменения и очищаем контекст
+                entityManager.flush()
+                entityManager.clear()
+
+                offset += pageSize
+                page++
+                log.info("Успешно записал ${pageSize * (page - 1) + products.size} продуктов в файл $exportFilePath")
+            }
+            log.info("Успешно обновил все цены и записал все записи в файл")
+            logFile.flush()
+        }
+    }
+}

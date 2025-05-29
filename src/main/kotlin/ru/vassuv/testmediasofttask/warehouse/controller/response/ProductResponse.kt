@@ -1,9 +1,11 @@
 package ru.vassuv.testmediasofttask.warehouse.controller.response
 
 import io.swagger.v3.oas.annotations.media.Schema
+import ru.vassuv.testmediasofttask.warehouse.enums.ProductCategoryType
 import java.math.BigDecimal
-import java.time.LocalDateTime
-import java.util.UUID
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import java.util.*
 
 /**
  * DTO-ответ с данными товара.
@@ -22,17 +24,17 @@ data class ProductResponse(
     val description: String?,
 
     @field:Schema(description = "Категория товара")
-    val category: String?,
+    val category: ProductCategoryType?,
 
     @field:Schema(description = "Цена товара")
     val price: BigDecimal,
 
     @field:Schema(description = "Количество товара на складе")
-    val quantity: Int,
+    val quantity: BigDecimal,
 
     @field:Schema(description = "Дата и время последнего изменения количества")
-    val quantityUpdatedAt: LocalDateTime,
+    val quantityUpdatedAt: ZonedDateTime,
 
     @field:Schema(description = "Дата создания товара")
-    val createdAt: LocalDateTime
+    val createdAt: LocalDate
 )

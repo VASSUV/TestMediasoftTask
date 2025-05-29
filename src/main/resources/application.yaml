@@ -13,9 +13,9 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate.format_sql: true
+#    show-sql: true
+#    properties:
+#      hibernate.format_sql: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
@@ -25,19 +25,27 @@ spring:
 
 app:
   scheduling:
-    enabled: false
+    enabled: true
 
 scheduling:
-  optimization: true
+  optimization: false
   price-change:
     simple:
       cron: "0 * * * * ?"
       percent: -0.01f
+      batch-size: 100000
+      export-file-path: export/products_simple.csv
     optimized:
       cron: "0 * * * * ?"
       percent: 0.01f
-      batchSize: 100000
-      exportFilePath: export/products.csv
+      batch-size: 100000
+      export-file-path: export/products.csv
+    entity-manager:
+      enabled: true
+      cron: "0 * * * * ?"
+      percent: 0.01f
+      batch-size: 100000
+      export-file-path: export/products.csv
 
 ---
 

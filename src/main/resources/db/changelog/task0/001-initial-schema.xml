@@ -12,30 +12,28 @@
     </preConditions>
 
     <changeSet author="vassuv" id="1-initial-schema">
-        <createTable tableName="products">
-            <column name="id" type="uuid">
+        <createTable tableName="products" remarks="Таблица товаров на складе">
+            <column name="id" type="uuid" remarks="Id товара">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="name" type="varchar(255)">
+            <column name="name" type="varchar(255)" remarks="Наименование товара">
                 <constraints nullable="false"/>
             </column>
-            <column name="article" type="varchar(255)">
+            <column name="article" type="varchar(255)" remarks="Артикул товара">
                 <constraints unique="true" nullable="false"/>
             </column>
-            <column name="description" type="text"/>
-            <column name="category" type="varchar(255)"/>
-            <column name="price" type="numeric(19,2)">
+            <column name="description" type="varchar(1024)" remarks="Описание товара"/>
+            <column name="category" type="varchar(50)" remarks="Категория товара"/>
+            <column name="price" type="numeric(19,2)" remarks="Цена товара">
                 <constraints nullable="false"/>
             </column>
-            <!--     TODO    numeric   -->
-            <column name="quantity" type="int">
+            <column name="quantity" type="numeric(19,2)" remarks="Количество товара на складе">
                 <constraints nullable="false"/>
             </column>
-<!--     TODO     TimeStampt  with time zone   -->
-            <column name="quantity_updated_at" type="timestamp">
+            <column name="quantity_updated_at" type="timestamptz" remarks="Дата и время последнего обновления товара">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_at" type="timestamp">
+            <column name="created_at" type="date" remarks="Дата создания товара">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -45,5 +43,3 @@
         </rollback>
     </changeSet>
 </databaseChangeLog>
-
-<!-- TODO add comments to column -->
