@@ -1,3 +1,13 @@
+
+management:
+  server:
+    9090
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: health, info, beans
+
 spring:
   config:
     activate:
@@ -23,6 +33,12 @@ spring:
   aop:
     auto: true
 
+  cache:
+    cache-names: currencies
+    type: caffeine
+    caffeine:
+      spec: expireAfterWrite=60s
+
 app:
   scheduling:
     enabled: false
@@ -46,6 +62,13 @@ scheduling:
       percent: 0.01f
       batch-size: 100000
       export-file-path: export/products.csv
+
+rest:
+  currency:
+    mock-enabled: false
+    host: http://localhost:8082
+    methods:
+      currencies: /api/currencies
 
 ---
 

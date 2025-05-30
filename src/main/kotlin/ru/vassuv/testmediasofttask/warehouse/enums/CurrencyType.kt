@@ -1,6 +1,6 @@
 package ru.vassuv.testmediasofttask.warehouse.enums
 
-enum class ProductCurrencyType {
+enum class CurrencyType {
     CNY,
     RUB,
     USD

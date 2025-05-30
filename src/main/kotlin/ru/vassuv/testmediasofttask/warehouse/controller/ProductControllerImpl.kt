@@ -1,8 +1,6 @@
 package ru.vassuv.testmediasofttask.warehouse.controller
 
-import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
@@ -25,9 +23,9 @@ import ru.vassuv.testmediasofttask.warehouse.controller.params.ProductSearchPara
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.SearchProductFilterRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateProductRequest
-import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.specification.ProductSearchSpecification.fromCriteria
 import ru.vassuv.testmediasofttask.warehouse.controller.specification.ProductSearchSpecification.fromSmartCriteria
+import ru.vassuv.testmediasofttask.warehouse.service.CurrencyConversionService
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
 import java.util.*
 
@@ -40,7 +38,8 @@ import java.util.*
 @RestController
 @RequestMapping("/api/products")
 class ProductControllerImpl(
-    private val productService: ProductService
+    private val productService: ProductService,
+    private val currencyConversionService: CurrencyConversionService
 ) : ProductController {
 
     /**
@@ -50,7 +49,11 @@ class ProductControllerImpl(
      * @return Страница с товарами.
      */
     @GetMapping
-    override fun getProducts(pageable: Pageable) = productService.getProducts(pageable).map { it.toProductResponse() }
+    override fun getProducts(pageable: Pageable) = currencyConversionService.getExchangeRateInfo()
+        .let { rateInfo ->
+            productService.getProducts(pageable).map { it.toProductResponse(rateInfo) }
+        }
+
 
     /**
      * Получение товара по идентификатору.
@@ -59,7 +62,10 @@ class ProductControllerImpl(
      * @return Ответ с товаром или статус 404.
      */
     @GetMapping("/{id}")
-    override fun getProductById(@PathVariable id: UUID) = productService.getProductById(id).toProductResponse()
+    override fun getProductById(@PathVariable id: UUID) = currencyConversionService.getExchangeRateInfo()
+        .let { rateInfo ->
+            productService.getProductById(id).toProductResponse(rateInfo)
+        }
 
     /**
      * Создание нового товара.
@@ -109,9 +115,11 @@ class ProductControllerImpl(
         @ModelAttribute params: ProductSearchParams,
         @PageableDefault(size = 20, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
-    ) = productService
-        .search(fromCriteria(params), pageable)
-        .map { it.toProductResponse() }
+    ) = currencyConversionService.getExchangeRateInfo().let { rateInfo ->
+        productService
+            .search(fromCriteria(params), pageable)
+            .map { it.toProductResponse(rateInfo) }
+    }
 
     /**
      * Многокритериальный продвинутый поиск по продуктам
@@ -126,7 +134,9 @@ class ProductControllerImpl(
         filterRequest: SearchProductFilterRequest,
         @PageableDefault(size = 20, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
-    ) = productService
-        .search(fromSmartCriteria(filterRequest), pageable)
-        .map { it.toProductResponse() }
+    ) = currencyConversionService.getExchangeRateInfo().let { rateInfo ->
+        productService
+            .search(fromSmartCriteria(filterRequest), pageable)
+            .map { it.toProductResponse(rateInfo) }
+    }
 }

@@ -1,4 +1,4 @@
-package ru.vassuv.testmediasofttask.warehouse.service.mappers
+package ru.vassuv.testmediasofttask.warehouse.service.model.mappers
 
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct

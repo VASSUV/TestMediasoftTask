@@ -7,22 +7,23 @@ import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductReq
 import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateProductRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
-import ru.vassuv.testmediasofttask.warehouse.enums.ProductCurrencyType
+import ru.vassuv.testmediasofttask.warehouse.service.model.ExchangeRateInfo
+import java.math.BigDecimal
 import java.util.UUID
 
 internal fun ProductData.toProductResponse(
-    defaultCurrencyType: ProductCurrencyType = ProductCurrencyType.RUB,
+    exchangeRateInfo: ExchangeRateInfo,
 ) = ProductResponse(
     id = this.id,
     name = this.name,
     article = this.article,
     description = this.description,
     category = this.category,
-    price = this.price,
+    price = this.price.convertPrice(exchangeRateInfo),
     quantity = this.quantity,
     quantityUpdatedAt = this.quantityUpdatedAt,
     createdAt = this.createdAt,
-    currency = defaultCurrencyType
+    currency = exchangeRateInfo.currencyType
 )
 
 internal fun CreateProductRequest.toCreatedProduct() = CreatedProduct(
@@ -44,3 +45,5 @@ internal fun UpdateProductRequest.toUpdatedProduct() = UpdatedProduct(
 )
 
 internal fun UUID.toUuidResponse() = UuidResponse (this)
+
+private fun BigDecimal.convertPrice(info: ExchangeRateInfo) = multiply(info.convertValue)

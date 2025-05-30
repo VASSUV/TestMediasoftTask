@@ -12,8 +12,8 @@ import ru.vassuv.testmediasofttask.warehouse.exception.ProductExistsWithArticleE
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.ProductRepository
-import ru.vassuv.testmediasofttask.warehouse.service.mappers.toProductData
-import ru.vassuv.testmediasofttask.warehouse.service.mappers.toProductEntity
+import ru.vassuv.testmediasofttask.warehouse.service.model.mappers.toProductData
+import ru.vassuv.testmediasofttask.warehouse.service.model.mappers.toProductEntity
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.service.model.ProductData
 import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedProduct
