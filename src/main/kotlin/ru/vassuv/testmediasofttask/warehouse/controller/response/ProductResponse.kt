@@ -2,6 +2,7 @@ package ru.vassuv.testmediasofttask.warehouse.controller.response
 
 import io.swagger.v3.oas.annotations.media.Schema
 import ru.vassuv.testmediasofttask.warehouse.enums.ProductCategoryType
+import ru.vassuv.testmediasofttask.warehouse.enums.ProductCurrencyType
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.ZonedDateTime
@@ -36,5 +37,8 @@ data class ProductResponse(
     val quantityUpdatedAt: ZonedDateTime,
 
     @field:Schema(description = "Дата создания товара")
-    val createdAt: LocalDate
+    val createdAt: LocalDate,
+
+    @field:Schema(description = "Валюта возвращаемой цены")
+    val currency: ProductCurrencyType
 )

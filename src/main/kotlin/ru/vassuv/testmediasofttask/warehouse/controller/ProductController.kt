@@ -8,9 +8,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
+import ru.vassuv.testmediasofttask.warehouse.controller.params.ProductSearchParams
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.request.SearchProductFilterRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateProductRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
@@ -159,4 +163,30 @@ interface ProductController {
         description = "Удаляет существующий товар по его id."
     )
     fun deleteProduct(id: UUID): ResponseEntity<Unit>
+
+    /**
+     * Многокритериальный поиск по продуктам
+     *
+     * @param params критерии поиска.
+     * @param pageable параметры для постаничной закгрузки
+     * @return страница продуктов отфильтрованных по критериям
+     */
+    @Operation(
+        summary = "Поиск продуктов по критериям",
+        description = "Находит продукты по критериям и собирает страницу"
+    )
+    fun searchProducts(params: ProductSearchParams, pageable: Pageable): Page<ProductResponse>
+
+    /**
+     * Многокритериальный продвинутый поиск по продуктам
+     *
+     * @param filterRequest критерии поиска.
+     * @param pageable параметры для постаничной закгрузки
+     * @return страница продуктов отфильтрованных по критериям
+     */
+    @Operation(
+        summary = "Поиск продуктов по критериям",
+        description = "Находит продукты по критериям и собирает страницу"
+    )
+    fun smartSearch(filterRequest: SearchProductFilterRequest, pageable: Pageable): Page<ProductResponse>
 }

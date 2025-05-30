@@ -7,9 +7,12 @@ import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductReq
 import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateProductRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
+import ru.vassuv.testmediasofttask.warehouse.enums.ProductCurrencyType
 import java.util.UUID
 
-internal fun ProductData.toProductResponse() = ProductResponse(
+internal fun ProductData.toProductResponse(
+    defaultCurrencyType: ProductCurrencyType = ProductCurrencyType.RUB,
+) = ProductResponse(
     id = this.id,
     name = this.name,
     article = this.article,
@@ -18,7 +21,8 @@ internal fun ProductData.toProductResponse() = ProductResponse(
     price = this.price,
     quantity = this.quantity,
     quantityUpdatedAt = this.quantityUpdatedAt,
-    createdAt = this.createdAt
+    createdAt = this.createdAt,
+    currency = defaultCurrencyType
 )
 
 internal fun CreateProductRequest.toCreatedProduct() = CreatedProduct(
