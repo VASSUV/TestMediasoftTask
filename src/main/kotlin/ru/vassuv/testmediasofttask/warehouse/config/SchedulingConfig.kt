@@ -1,6 +1,7 @@
 package ru.vassuv.testmediasofttask.warehouse.config
 
 import jakarta.persistence.EntityManager
+import org.hibernate.SessionFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.context.annotation.Bean
@@ -36,9 +37,10 @@ class SchedulerConfig {
     @ConditionalOnProperty(name = ["scheduling.optimization"], havingValue = "false")
     @Conditional(EntityManagerSchedulingCondition::class)
     fun entityManagerScheduler(
+        sessionFactory: SessionFactory,
         entityManager: EntityManager,
         schedulingProperties: SchedulingProperties
-    ) = EntityManagerScheduler(entityManager, schedulingProperties)
+    ) = EntityManagerScheduler(sessionFactory, entityManager, schedulingProperties)
 
     @Bean
     @Conditional(OptimizedSchedulingCondition::class)

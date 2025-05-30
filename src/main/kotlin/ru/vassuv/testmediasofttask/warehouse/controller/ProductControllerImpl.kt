@@ -1,11 +1,16 @@
 package ru.vassuv.testmediasofttask.warehouse.controller
 
+import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
+import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
+import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -16,8 +21,13 @@ import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toCreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toProductResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toUpdatedProduct
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toUuidResponse
+import ru.vassuv.testmediasofttask.warehouse.controller.params.ProductSearchParams
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.request.SearchProductFilterRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateProductRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductResponse
+import ru.vassuv.testmediasofttask.warehouse.controller.specification.ProductSearchSpecification.fromCriteria
+import ru.vassuv.testmediasofttask.warehouse.controller.specification.ProductSearchSpecification.fromSmartCriteria
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
 import java.util.*
 
@@ -86,4 +96,37 @@ class ProductControllerImpl(
     override fun deleteProduct(@PathVariable id: UUID) = ResponseEntity
         .status(HttpStatus.NO_CONTENT)
         .body(productService.deleteProduct(id))
+
+    /**
+     * Многокритериальный поиск по продуктам
+     *
+     * @param params критерии поиска.
+     * @param pageable параметры для постаничной закгрузки
+     * @return страница продуктов отфильтрованных по критериям
+     */
+    @GetMapping("/search")
+    override fun searchProducts(
+        @ModelAttribute params: ProductSearchParams,
+        @PageableDefault(size = 20, sort = ["createdAt"], direction = Sort.Direction.DESC)
+        pageable: Pageable
+    ) = productService
+        .search(fromCriteria(params), pageable)
+        .map { it.toProductResponse() }
+
+    /**
+     * Многокритериальный продвинутый поиск по продуктам
+     *
+     * @param filterRequest критерии поиска.
+     * @param pageable параметры для постаничной закгрузки
+     * @return страница продуктов отфильтрованных по критериям
+     */
+    @PostMapping("/search/smart")
+    override fun smartSearch(
+        @Valid @RequestBody
+        filterRequest: SearchProductFilterRequest,
+        @PageableDefault(size = 20, sort = ["createdAt"], direction = Sort.Direction.DESC)
+        pageable: Pageable
+    ) = productService
+        .search(fromSmartCriteria(filterRequest), pageable)
+        .map { it.toProductResponse() }
 }

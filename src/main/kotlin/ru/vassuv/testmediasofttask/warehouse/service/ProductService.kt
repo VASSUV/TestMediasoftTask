@@ -2,15 +2,13 @@ package ru.vassuv.testmediasofttask.warehouse.service
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.transaction.annotation.Transactional
+import org.springframework.data.jpa.domain.Specification
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.service.model.ProductData
 import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedProduct
-import java.math.BigDecimal
 import java.util.UUID
-import java.util.stream.Stream
 
 /**
  * Сервис для управления товарами на складе.
@@ -75,4 +73,13 @@ interface ProductService {
      * @return список сохраненных продуктов
      */
     fun saveAll(products: Sequence<ProductEntity>): List<ProductEntity>
+
+    /**
+     * Многокритериальный поиск по продуктам
+     *
+     * @param specification спецификация для поиска продуктов
+     * @param pageable параметры для постранично загрузки
+     * @return Страница с товарами в виде Domain-моделей.
+     */
+    fun search(specification: Specification<ProductEntity>, pageable: Pageable): Page<ProductData>
 }

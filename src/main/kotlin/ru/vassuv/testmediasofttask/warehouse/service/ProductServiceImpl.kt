@@ -1,10 +1,9 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
-import jakarta.persistence.EntityManager
 import jakarta.persistence.LockModeType
-import jakarta.persistence.PersistenceContext
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -12,17 +11,14 @@ import org.springframework.transaction.annotation.Transactional
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductExistsWithArticleException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
-import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.ProductRepository
+import ru.vassuv.testmediasofttask.warehouse.service.mappers.toProductData
+import ru.vassuv.testmediasofttask.warehouse.service.mappers.toProductEntity
+import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.service.model.ProductData
 import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedProduct
-import ru.vassuv.testmediasofttask.warehouse.service.mappers.toProductEntity
-import ru.vassuv.testmediasofttask.warehouse.service.mappers.toProductData
-import java.math.BigDecimal
 import java.time.ZonedDateTime
-import java.util.UUID
-import java.util.stream.Stream
-import kotlin.streams.asSequence
+import java.util.*
 
 /**
  * Сервис для управления товарами на складе.
@@ -32,7 +28,7 @@ import kotlin.streams.asSequence
 @Service
 class ProductServiceImpl(
     private val productRepository: ProductRepository
-): ProductService {
+) : ProductService {
 
     /**
      * Получение списка товаров с пагинацией.
@@ -129,4 +125,15 @@ class ProductServiceImpl(
     override fun saveAll(products: Sequence<ProductEntity>): List<ProductEntity> =
         productRepository.saveAll(products.asIterable())
 
+    /**
+     * Многокритериальный поиск по продуктам
+     *
+     * @param specification спецификация для поиска продуктов
+     * @param pageable параметры для постранично загрузки
+     * @return Страница с товарами в виде Domain-моделей.
+     */
+    override fun search(specification: Specification<ProductEntity>, pageable: Pageable): Page<ProductData> {
+        return productRepository.findAll(specification, pageable)
+            .map { it.toProductData() }
+    }
 }

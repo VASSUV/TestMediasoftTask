@@ -1,6 +1,7 @@
 package ru.vassuv.testmediasofttask.warehouse.persist.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.transaction.annotation.Transactional
@@ -14,7 +15,7 @@ import java.util.stream.Stream
  * Репозиторий для выполнения операций над товарами в базе данных,
  * где за счет интерфеса JPARepository добавляются CRUD операции к БД
  */
-interface ProductRepository : JpaRepository<ProductEntity, UUID> {
+interface ProductRepository : JpaRepository<ProductEntity, UUID>, JpaSpecificationExecutor<ProductEntity> {
     fun existsProductEntityByArticle(article: String): Boolean
 
     @Query("""

@@ -1,11 +1,19 @@
 # Backend Development Notes
 
 ## 🔧 Что ещё нужно
+- параметры включения шедулеров сделать не по enable, а по enum
+- Вынести проекции в отдельный пакет, и переименовать
 - Вынести `enum` как `*Type`
+- Попробовать параметризованные тесты
 - Разобраться с `PessimisticLock`, `OptimisticLock`, `ExclusiveLock`
 - В тестах генерацию данных делать через `.copy(...)` и мок-функции
 - Проверить корректность результата `Page`
 - Посчитать количество SQL-запросов при вызове `delete` в Hibernate
+- Spring batch framework
+- Какие требования к Entity? (id, final, no constructors)
+- query DSL
+- DataJpaTest
+- Audit, Hibernate Envers
 
 ---
 
@@ -24,6 +32,13 @@
 - Hibernate `@Version` — аудит записей
 - Захват блокировок `databasechangeloglock` в Liquibase
 - Конфигурация `cron` для `@Scheduled`
+- Dispatcher servlet, Container Servlet, TomCat server  
+- filter interceptors
+- четкая картина пути запроса от начала до ответа
+- Как устроен стартер, 
+- @ShedulerLock
+- Session scope bean
+- 
 
 ---
 
@@ -71,3 +86,5 @@
 - [x] `Update` и `Create` возвращают `UUID`
 - [x] Планировщик через JDBC
 - [x] Оптимизирован доступ к БД
+- [x] многокритериальный поиск
+- [x] полиморфная десериализация
