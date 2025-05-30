@@ -4,6 +4,12 @@
 
 Приложение реализует CRUD-функционал для товаров на складе.
 
+## Предварительно убедиться
+
+- что стоит java 17
+- что прописана переменная окружения JAVA_HOME
+- что добавлен путь до java в переменную PATH
+
 ## 🚀 Запуск проекта локально (Docker Compose)
 
 1. Установите Docker и Docker Compose.
@@ -13,6 +19,13 @@
 docker compose up -d
 ```
 
+проверка что все работает
+
+```bash
+docker ps
+```
+
+
 ## 🛠️ Сборка и запуск без Docker
 
 Для запуска без Docker вам понадобится PostgreSQL 16.
@@ -20,10 +33,10 @@ docker compose up -d
 - Установите переменные в .env или переменные окружения:
 
 ```properties
-SPRING_DATASOURCE_URL=jdbc:postgresql://warehouse-db:5432/test_database_name
+SPRING_DATASOURCE_URL=jdbc:postgresql://warehouse-db:5432/warehouse_db
 SPRING_DATASOURCE_USERNAME=test_user_name
 SPRING_DATASOURCE_PASSWORD=test_user_password
-SPRING_DATASOURCE_DATABASE_NAME=test_database_name
+SPRING_DATASOURCE_DATABASE_NAME=warehouse_db
 ```
 - Выполните команды:
 
@@ -32,10 +45,27 @@ SPRING_DATASOURCE_DATABASE_NAME=test_database_name
 ./gradlew bootRun
 ```
 
+- либо можно запустить в локальном профиле h2
+```bash
+- ./gradlew bootRun --args='--spring.profiles.active=local'
+```
+
+- И для доступа к консоли h2 спользовать ссылку (посмотреть параметры для входа можно в application-local.properties)
+
+```http request
+http://localhost:8080/h2-console
+```
+
 ## 🧪 Запуск тестов
 
 ```bash
 ./gradlew test
+```
+
+## Проверка правил kotlin detect
+
+```bash
+./gradlew detekt
 ```
 
 ## Полезные ссылки

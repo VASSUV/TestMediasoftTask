@@ -1,47 +1,44 @@
 package ru.vassuv.testmediasofttask.warehouse.controller
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.ExampleObject
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
-import jakarta.validation.Valid
 import org.springframework.data.domain.Page
-import org.springframework.http.HttpStatus
+import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
-import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toDomain
-import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toResponseDto
-import ru.vassuv.testmediasofttask.warehouse.model.dto.CreateProductRequestDto
-import ru.vassuv.testmediasofttask.warehouse.model.dto.ProductResponseDto
-import ru.vassuv.testmediasofttask.warehouse.model.dto.UpdateProductRequestDto
-import ru.vassuv.testmediasofttask.warehouse.service.ProductService
-import java.util.UUID
+import org.springframework.web.bind.annotation.PathVariable
+import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateProductRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductResponse
+import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
+import ru.vassuv.testmediasofttask.warehouse.exception.handler.ApiError
+import java.util.*
 
 /**
- * REST-контроллер для управления товарами.
+ * Интерфейс для REST-контроллера управления товарами.
  * Предоставляет CRUD-операции для товаров на складе.
- *
- * @property productService
  */
-@RestController
-@RequestMapping("/api/products")
-@Tag(name = "Products", description = "Управление товарами на складе")
-class ProductController(
-    private val productService: ProductService
-) {
+
+@Tag(
+    name = "Products",
+    description = "Управление товарами на складе"
+)
+interface ProductController {
 
     /**
      * Получение списка товаров с пагинацией.
      *
-     * @param page Номер страницы (начинается с 0).
-     * @param size Количество элементов на странице.
+     * @param pageable Параметры для постраничной загрузки.
      * @return Страница с товарами.
      */
-    @GetMapping
-    @Operation(summary = "Получение списка товаров", description = "Возвращает список всех товаров с пагинацией.")
-    fun getProducts(
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "10") size: Int
-    ): Page<ProductResponseDto> =
-        productService.getProducts(page, size).map { it.toResponseDto() }
+    @Operation(
+        summary = "Получение списка товаров",
+        description = "Возвращает список всех товаров с пагинацией."
+    )
+    fun getProducts(pageable: Pageable): Page<ProductResponse>
 
     /**
      * Получение товара по идентификатору.
@@ -49,13 +46,11 @@ class ProductController(
      * @param id UUID товара.
      * @return Ответ с товаром или статус 404.
      */
-    @GetMapping("/{id}")
-    @Operation(summary = "Получение товара", description = "Получение одного товара по его ID")
-    fun getProductById(@PathVariable id: UUID): ResponseEntity<ProductResponseDto> =
-        productService.getProductById(id)
-            ?.toResponseDto()
-            ?.let { ResponseEntity.ok(it) }
-            ?: ResponseEntity.notFound().build()
+    @Operation(
+        summary = "Получение товара",
+        description = "Получение одного товара по его ID"
+    )
+    fun getProductById(@PathVariable id: UUID): Any
 
     /**
      * Создание нового товара.
@@ -63,42 +58,105 @@ class ProductController(
      * @param request DTO с данными нового товара.
      * @return Созданный товар.
      */
-    @PostMapping
-    @Operation(summary = "Создание нового товара", description = "Создает новый товар с указанными параметрами.")
-    fun createProduct(@Valid @RequestBody request: CreateProductRequestDto): ResponseEntity<ProductResponseDto> =
-        ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(productService.createProduct(request.toDomain()).toResponseDto())
+    @Operation(
+        summary = "Создание нового товара",
+        description = "Создает новый товар с указанными параметрами.",
+        requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
+            content = [Content(schema = Schema(implementation = CreateProductRequest::class))]
+        ),
+        responses = [
+            ApiResponse(
+                responseCode = "201",
+                description = "Товар успешно создан",
+                content = [Content(schema = Schema(implementation = UuidResponse::class))]
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "Некорректный запрос",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ApiError::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Ошибка валидации",
+                                value = """
+                                {
+                                    "status": 400,
+                                    "error": "BAD_REQUEST",
+                                    "message": "Не правильно переданное значение в поле: name",
+                                    "classPath": "org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.resolveArgument:159",
+                                    "timestamp": "2025-05-28T00:02:29.767701"
+                                }
+                                """
+                            ),
+                            ExampleObject(
+                                name = "Некорректный JSON",
+                                value = """
+                                {
+                                    "status": 400,
+                                    "error": "Malformed JSON request",
+                                    "message": "Некорректный формат поля 'category'",
+                                    "classPath": "org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter.readJavaType:408",
+                                    "timestamp": "2025-05-27T23:57:56.657516"
+                                }
+                                """
+                            )
+                        ]
+                    )
+                ]
+            ),
+            ApiResponse(
+                responseCode = "409",
+                description = "Конфликт уникальности",
+                content = [
+                    Content(
+                        schema = Schema(implementation = ApiError::class),
+                        examples = [
+                            ExampleObject(
+                                name = "Артикул уже существует",
+                                value = """
+                                {
+                                    "status": 409,
+                                    "error": "CONFLICT",
+                                    "message": "Товар с таким артикулом уже существует",
+                                    "classPath": "ru.vassuv.testmediasofttask.warehouse.service.ProductService.createProduct:62",
+                                    "timestamp": "2025-05-28T00:03:59.168566"
+                                }
+                                """
+                            )
+                        ]
+                    )
+                ]
+            )
+        ]
+    )
+    fun createProduct(request: CreateProductRequest): ResponseEntity<UuidResponse>
 
     /**
      * Обновление товара по идентификатору.
      *
      * @param id UUID товара.
      * @param request DTO с обновленными данными товара.
-     * @return Обновленный товар или статус 404.
+     * @return статусы 204, 404 или 409.
      */
-    @PutMapping("/{id}")
-    @Operation(summary = "Обновление существующего товара", description = "Обновляет существующий товар с указанными параметрами по его id.")
+    @Operation(
+        summary = "Обновление существующего товара",
+        description = "Обновляет существующий товар с указанными параметрами по его id."
+    )
     fun updateProduct(
-        @PathVariable id: UUID,
-        @Valid @RequestBody request: UpdateProductRequestDto
-    ): ResponseEntity<ProductResponseDto> =
-        productService.updateProduct(id, request.toDomain())
-            ?.toResponseDto()
-            ?.let { ResponseEntity.ok(it) }
-            ?: ResponseEntity.notFound().build()
+        id: UUID,
+        request: UpdateProductRequest
+    ): ResponseEntity<Unit>
 
     /**
      * Удаление товара по идентификатору.
      *
      * @param id UUID товара.
-     * @return Статус успешного удаления (204) или 404.
+     * @return статусы 204 или 404.
      */
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Удаление существующего товара", description = "Удаляет существующий товар по его id.")
-    fun deleteProduct(@PathVariable id: UUID): ResponseEntity<Unit> {
-        productService.deleteProduct(id)
-        // TODO неочевидно что метод может возвращать 404, так как это сделано в GlobalExceptionHandler
-        return ResponseEntity.noContent().build()
-    }
+    @Operation(
+        summary = "Удаление существующего товара",
+        description = "Удаляет существующий товар по его id."
+    )
+    fun deleteProduct(id: UUID): ResponseEntity<Unit>
 }

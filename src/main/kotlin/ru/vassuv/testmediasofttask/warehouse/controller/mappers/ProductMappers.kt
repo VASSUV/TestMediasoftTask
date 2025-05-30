@@ -1,15 +1,15 @@
 package ru.vassuv.testmediasofttask.warehouse.controller.mappers
 
-import ru.vassuv.testmediasofttask.warehouse.model.domain.CreatedProduct
-import ru.vassuv.testmediasofttask.warehouse.model.domain.DomainProduct
-import ru.vassuv.testmediasofttask.warehouse.model.domain.UpdatedProduct
-import ru.vassuv.testmediasofttask.warehouse.model.dto.CreateProductRequestDto
-import ru.vassuv.testmediasofttask.warehouse.model.dto.ProductResponseDto
-import ru.vassuv.testmediasofttask.warehouse.model.dto.UpdateProductRequestDto
+import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct
+import ru.vassuv.testmediasofttask.warehouse.service.model.ProductData
+import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedProduct
+import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductResponse
+import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateProductRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
+import java.util.UUID
 
-// TODO возможно вынести все мапперы в отдельный object
-
-internal fun DomainProduct.toResponseDto(): ProductResponseDto = ProductResponseDto(
+internal fun ProductData.toProductResponse() = ProductResponse(
     id = this.id,
     name = this.name,
     article = this.article,
@@ -21,7 +21,7 @@ internal fun DomainProduct.toResponseDto(): ProductResponseDto = ProductResponse
     createdAt = this.createdAt
 )
 
-internal fun CreateProductRequestDto.toDomain(): CreatedProduct = CreatedProduct(
+internal fun CreateProductRequest.toCreatedProduct() = CreatedProduct(
     name = name,
     article = article,
     description = description,
@@ -30,7 +30,7 @@ internal fun CreateProductRequestDto.toDomain(): CreatedProduct = CreatedProduct
     quantity = quantity
 )
 
-internal fun UpdateProductRequestDto.toDomain(): UpdatedProduct = UpdatedProduct(
+internal fun UpdateProductRequest.toUpdatedProduct() = UpdatedProduct(
     name = name,
     article = article,
     description = description,
@@ -38,3 +38,5 @@ internal fun UpdateProductRequestDto.toDomain(): UpdatedProduct = UpdatedProduct
     price = price,
     quantity = quantity
 )
+
+internal fun UUID.toUuidResponse() = UuidResponse (this)

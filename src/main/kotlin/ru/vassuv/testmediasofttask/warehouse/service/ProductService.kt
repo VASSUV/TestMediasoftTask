@@ -1,44 +1,31 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
-import org.springframework.data.repository.findByIdOrNull
-import org.springframework.stereotype.Service
+import org.springframework.data.domain.Pageable
 import org.springframework.transaction.annotation.Transactional
-import ru.vassuv.testmediasofttask.warehouse.exception.ProductIsExistWithArticleException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
-import ru.vassuv.testmediasofttask.warehouse.model.domain.CreatedProduct
-import ru.vassuv.testmediasofttask.warehouse.repository.ProductRepository
-import ru.vassuv.testmediasofttask.warehouse.model.domain.DomainProduct
-import ru.vassuv.testmediasofttask.warehouse.model.domain.UpdatedProduct
-import ru.vassuv.testmediasofttask.warehouse.service.mappers.applyWith
-import ru.vassuv.testmediasofttask.warehouse.service.mappers.toDbo
-import ru.vassuv.testmediasofttask.warehouse.service.mappers.toDomain
-import java.time.LocalDateTime
+import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
+import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct
+import ru.vassuv.testmediasofttask.warehouse.service.model.ProductData
+import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedProduct
+import java.math.BigDecimal
 import java.util.UUID
+import java.util.stream.Stream
 
 /**
  * Сервис для управления товарами на складе.
  *
  * @property productRepository Репозиторий товаров.
  */
-@Service
-class ProductService(
-    private val productRepository: ProductRepository
-) {
+interface ProductService {
 
     /**
      * Получение списка товаров с пагинацией.
      *
-     * @param page Номер страницы.
-     * @param size Количество элементов на странице.
+     * @param pageable параметры для постранично загрузки
      * @return Страница с товарами в виде Domain-моделей.
      */
-    fun getProducts(page: Int, size: Int): Page<DomainProduct> {
-        val pageable = PageRequest.of(page, size, Sort.by("createdAt").descending())
-        return productRepository.findAll(pageable).map { it.toDomain() }
-    }
+    fun getProducts(pageable: Pageable): Page<ProductData>
 
     /**
      * Получение товара по идентификатору.
@@ -47,8 +34,7 @@ class ProductService(
      * @return Найденный товар.
      * @throws ProductNotFoundException Если товар не найден.
      */
-    fun getProductById(id: UUID): DomainProduct? =
-        productRepository.findByIdOrNull(id)?.toDomain() ?: throw ProductNotFoundException(id)
+    fun getProductById(id: UUID): ProductData
 
     /**
      * Создание нового товара.
@@ -56,12 +42,7 @@ class ProductService(
      * @param product Доменная модель нового товара.
      * @return Созданный товар.
      */
-    fun createProduct(product: CreatedProduct): DomainProduct {
-        val isExistArticle = productRepository.findByArticle(product.article) != null // TODO заменить на existsByArticle, для эффективности
-        if (isExistArticle)
-            throw ProductIsExistWithArticleException()
-        return productRepository.save(product.toDbo(LocalDateTime.now())).toDomain()
-    }
+    fun createProduct(product: CreatedProduct): UUID
 
     /**
      * Обновление существующего товара.
@@ -70,12 +51,7 @@ class ProductService(
      * @param updatedProduct Доменная модель с обновленными данными.
      * @return Обновленный товар или null, если не найден.
      */
-    @Transactional
-    fun updateProduct(id: UUID, updatedProduct: UpdatedProduct): DomainProduct? {
-        val existingProduct = productRepository.findByIdOrNull(id) ?: throw ProductNotFoundException(id)
-        existingProduct.applyWith(updatedProduct, LocalDateTime.now())
-        return productRepository.save(existingProduct).toDomain()
-    }
+    fun updateProduct(id: UUID, updatedProduct: UpdatedProduct)
 
     /**
      * Удаление товара по идентификатору.
@@ -83,8 +59,20 @@ class ProductService(
      * @param id UUID товара.
      * @return true, если удаление прошло успешно, иначе false.
      */
-    fun deleteProduct(id: UUID) {
-        if (!productRepository.existsById(id)) throw ProductNotFoundException(id)
-        productRepository.deleteById(id)
-    }
+    fun deleteProduct(id: UUID)
+
+    /**
+     * Получение всех товаров (не для API)
+     *
+     * @return список товаров
+     */
+    fun findAll(): List<ProductEntity>
+
+    /**
+     * Сохранение всех товаров (не для API)
+     *
+     * @param products список сохраняемых продуктов
+     * @return список сохраненных продуктов
+     */
+    fun saveAll(products: Sequence<ProductEntity>): List<ProductEntity>
 }

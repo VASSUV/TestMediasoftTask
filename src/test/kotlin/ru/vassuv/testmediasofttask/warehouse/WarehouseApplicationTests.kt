@@ -8,6 +8,6 @@ class WarehouseApplicationTests {
 
 	@Test
 	fun contextLoads() {
+		println()
 	}
-
 }
