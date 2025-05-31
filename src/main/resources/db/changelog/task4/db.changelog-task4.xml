@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="
+       http://www.liquibase.org/xml/ns/dbchangelog
+       https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <include file="db/changelog/task4/001-rename_products_table.xml"/>
+    <include file="db/changelog/task4/002-add_is_available_to_product.xml"/>
+    <include file="db/changelog/task4/003-create_customer_table.xml"/>
+    <include file="db/changelog/task4/004-create_order_table.xml"/>
+    <include file="db/changelog/task4/005-create_order_product_table.xml"/>
+</databaseChangeLog>

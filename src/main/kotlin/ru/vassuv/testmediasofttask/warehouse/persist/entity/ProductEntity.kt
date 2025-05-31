@@ -19,7 +19,7 @@ import java.util.*
  * Сущность товара для хранения в базе данных.
  */
 @Entity
-@Table(name = "products")
+@Table(name = "product")
 class ProductEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -48,5 +48,8 @@ class ProductEntity(
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
-    var createdAt: LocalDate = LocalDate.now()
+    var createdAt: LocalDate = LocalDate.now(),
+
+    @Column(nullable = false)
+    var isAvailable: Boolean = true
 )

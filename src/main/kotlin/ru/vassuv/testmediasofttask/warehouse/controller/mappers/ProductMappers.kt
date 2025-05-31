@@ -23,6 +23,7 @@ internal fun ProductData.toProductResponse(
     quantity = this.quantity,
     quantityUpdatedAt = this.quantityUpdatedAt,
     createdAt = this.createdAt,
+    isAvailable = this.isAvailable,
     currency = exchangeRateInfo.currencyType
 )
 

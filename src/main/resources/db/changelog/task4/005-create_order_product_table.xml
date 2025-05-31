@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+          http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="create-order-product-table" author="vasiliy">
+        <createTable tableName="order_product">
+            <column name="order_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_order_product_order" references="order(id)"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_order_product_product" references="product(id)"/>
+            </column>
+            <column name="quantity" type="numeric(15, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="numeric(15, 2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey columnNames="order_id, product_id" constraintName="pk_order_product" tableName="order_product"/>
+
+        <rollback>
+            <dropTable tableName="order_product"/>
+        </rollback>
+    </changeSet>
+</databaseChangeLog>

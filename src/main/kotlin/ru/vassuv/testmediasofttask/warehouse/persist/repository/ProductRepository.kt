@@ -2,12 +2,10 @@ package ru.vassuv.testmediasofttask.warehouse.persist.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.transaction.annotation.Transactional
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
-import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductWithConflictCheck
-import java.math.BigDecimal
+import ru.vassuv.testmediasofttask.warehouse.persist.entity.projecttion.ProductWithConflictCheckProjection
 import java.util.UUID
 import java.util.stream.Stream
 
@@ -27,7 +25,7 @@ interface ProductRepository : JpaRepository<ProductEntity, UUID>, JpaSpecificati
         FROM ProductEntity p
         WHERE p.id = :id
     """)
-    fun findByIdWithArticleConflict(id: UUID, article: String): ProductWithConflictCheck?
+    fun findByIdWithArticleConflict(id: UUID, article: String): ProductWithConflictCheckProjection?
 
     @Query("SELECT p FROM ProductEntity p ORDER BY p.id")
     @Transactional(readOnly = true)

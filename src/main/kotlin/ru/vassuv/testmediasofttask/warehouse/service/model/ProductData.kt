@@ -18,5 +18,6 @@ data class ProductData(
     val price: BigDecimal,
     val quantity: BigDecimal,
     val quantityUpdatedAt: ZonedDateTime,
-    val createdAt: LocalDate
+    val createdAt: LocalDate,
+    val isAvailable: Boolean
 )

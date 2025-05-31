@@ -13,7 +13,8 @@ internal fun ProductEntity.toProductData(): ProductData = ProductData(
     price = this.price,
     quantity = this.quantity,
     quantityUpdatedAt = this.quantityUpdatedAt,
-    createdAt = this.createdAt
+    createdAt = this.createdAt,
+    isAvailable = this.isAvailable
 )
 
 internal fun CreatedProduct.toProductEntity() = ProductEntity(

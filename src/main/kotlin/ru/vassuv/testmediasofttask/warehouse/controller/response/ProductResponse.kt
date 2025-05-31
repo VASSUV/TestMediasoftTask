@@ -39,6 +39,9 @@ data class ProductResponse(
     @field:Schema(description = "Дата создания товара")
     val createdAt: LocalDate,
 
+    @field:Schema(description = "Доступность товара")
+    val isAvailable: Boolean,
+
     @field:Schema(description = "Валюта возвращаемой цены")
     val currency: CurrencyType
 )
