@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import java.time.LocalDateTime
 
 /**
- * Класс обертка над ошибкой, возвращаемая приложение при исключениях
+ * Структура данных, используемая для возвращения подробной информации об ошибках.
  *
- * @property status - статус ответа на запрос TODO но может сделать свой собственный список ошибок
- * @property error - текст ошибки
- * @property message - текст сообщения
- * @property timestamp - время ошибки
+ * @property status HTTP-статус ошибки.
+ * @property error Короткое описание ошибки.
+ * @property message Детальное сообщение об ошибке.
+ * @property classPath Путь к классу и методу, вызвавшим ошибку.
+ * @property originalMessage Исходное сообщение об ошибке (необязательно).
+ * @property timestamp Время возникновения ошибки.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ApiError(

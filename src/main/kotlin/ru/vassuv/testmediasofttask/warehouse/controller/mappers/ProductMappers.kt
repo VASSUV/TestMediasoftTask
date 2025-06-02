@@ -11,6 +11,10 @@ import ru.vassuv.testmediasofttask.warehouse.service.model.ExchangeRateInfo
 import java.math.BigDecimal
 import java.util.UUID
 
+/**
+ * Мапперы для преобразования моделей, запросов и ответов, связанных с продуктами.
+ */
+
 internal fun ProductData.toProductResponse(
     exchangeRateInfo: ExchangeRateInfo,
 ) = ProductResponse(

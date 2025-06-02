@@ -1,16 +1,11 @@
 package ru.vassuv.testmediasofttask.warehouse.controller
 
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.ExampleObject
-import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.ValidationException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.web.PageableDefault
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import ru.vassuv.testmediasofttask.warehouse.controller.params.ProductSearchParams
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductRequest
@@ -18,14 +13,16 @@ import ru.vassuv.testmediasofttask.warehouse.controller.request.SearchProductFil
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateProductRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
-import ru.vassuv.testmediasofttask.warehouse.exception.handler.ApiError
+import ru.vassuv.testmediasofttask.warehouse.exception.ProductExistsWithArticleException
+import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
 import java.util.*
 
 /**
- * Интерфейс для REST-контроллера управления товарами.
- * Предоставляет CRUD-операции для товаров на складе.
+ * Интерфейс REST-контроллера для управления товарами.
+ *
+ * Предоставляет операции для создания, чтения, обновления и удаления (CRUD),
+ * а также различные виды поиска и фильтрации товаров на складе.
  */
-
 @Tag(
     name = "Products",
     description = "Управление товарами на складе"
@@ -33,10 +30,10 @@ import java.util.*
 interface ProductController {
 
     /**
-     * Получение списка товаров с пагинацией.
+     * Возвращает постраничный список всех товаров.
      *
-     * @param pageable Параметры для постраничной загрузки.
-     * @return Страница с товарами.
+     * @param pageable параметры пагинации и сортировки.
+     * @return Страница с информацией о товарах.
      */
     @Operation(
         summary = "Получение списка товаров",
@@ -45,107 +42,50 @@ interface ProductController {
     fun getProducts(pageable: Pageable): Page<ProductResponse>
 
     /**
-     * Получение товара по идентификатору.
+     * Возвращает товар по указанному UUID.
      *
-     * @param id UUID товара.
-     * @return Ответ с товаром или статус 404.
+     * @param id уникальный идентификатор товара.
+     * @return объект товара, если найден; иначе 404 статус.
+     *
+     * @throws ProductNotFoundException если товар не найден.
      */
     @Operation(
-        summary = "Получение товара",
-        description = "Получение одного товара по его ID"
+        summary = "Получение товара по идентификатору",
+        description = "Возвращает данные одного товара по его идентификатору."
     )
     fun getProductById(@PathVariable id: UUID): Any
 
     /**
-     * Создание нового товара.
+     * Создаёт новый товар.
      *
-     * @param request DTO с данными нового товара.
-     * @return Созданный товар.
+     * Проверяет уникальность артикула и корректность данных.
+     *
+     * @param request данные нового товара.
+     * @return Ответ со статусом CREATED и идентификатором товара.
+     *
+     * @throws ProductExistsWithArticleException если товар с таким артикулом уже существует.
+     * @throws ValidationException при некорректных входных данных.
      */
     @Operation(
         summary = "Создание нового товара",
-        description = "Создает новый товар с указанными параметрами.",
-        requestBody = io.swagger.v3.oas.annotations.parameters.RequestBody(
-            content = [Content(schema = Schema(implementation = CreateProductRequest::class))]
-        ),
-        responses = [
-            ApiResponse(
-                responseCode = "201",
-                description = "Товар успешно создан",
-                content = [Content(schema = Schema(implementation = UuidResponse::class))]
-            ),
-            ApiResponse(
-                responseCode = "400",
-                description = "Некорректный запрос",
-                content = [
-                    Content(
-                        schema = Schema(implementation = ApiError::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Ошибка валидации",
-                                value = """
-                                {
-                                    "status": 400,
-                                    "error": "BAD_REQUEST",
-                                    "message": "Не правильно переданное значение в поле: name",
-                                    "classPath": "org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor.resolveArgument:159",
-                                    "timestamp": "2025-05-28T00:02:29.767701"
-                                }
-                                """
-                            ),
-                            ExampleObject(
-                                name = "Некорректный JSON",
-                                value = """
-                                {
-                                    "status": 400,
-                                    "error": "Malformed JSON request",
-                                    "message": "Некорректный формат поля 'category'",
-                                    "classPath": "org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter.readJavaType:408",
-                                    "timestamp": "2025-05-27T23:57:56.657516"
-                                }
-                                """
-                            )
-                        ]
-                    )
-                ]
-            ),
-            ApiResponse(
-                responseCode = "409",
-                description = "Конфликт уникальности",
-                content = [
-                    Content(
-                        schema = Schema(implementation = ApiError::class),
-                        examples = [
-                            ExampleObject(
-                                name = "Артикул уже существует",
-                                value = """
-                                {
-                                    "status": 409,
-                                    "error": "CONFLICT",
-                                    "message": "Товар с таким артикулом уже существует",
-                                    "classPath": "ru.vassuv.testmediasofttask.warehouse.service.ProductService.createProduct:62",
-                                    "timestamp": "2025-05-28T00:03:59.168566"
-                                }
-                                """
-                            )
-                        ]
-                    )
-                ]
-            )
-        ]
+        description = "Создаёт новый товар с указанными параметрами."
     )
     fun createProduct(request: CreateProductRequest): ResponseEntity<UuidResponse>
 
     /**
-     * Обновление товара по идентификатору.
+     * Обновляет данные существующего товара.
      *
-     * @param id UUID товара.
-     * @param request DTO с обновленными данными товара.
-     * @return статусы 204, 404 или 409.
+     * @param id уникальный идентификатор товара.
+     * @param request обновлённые данные товара.
+     * @return статус NO_CONTENT при успешном обновлении, 404 если товар не найден, 409 если конфликт данных.
+     *
+     * @throws ProductNotFoundException если товар не найден.
+     * @throws ProductExistsWithArticleException если возник конфликт уникальности артикула.
+     * @throws ValidationException при некорректных входных данных.
      */
     @Operation(
         summary = "Обновление существующего товара",
-        description = "Обновляет существующий товар с указанными параметрами по его id."
+        description = "Обновляет данные товара по его идентификатору."
     )
     fun updateProduct(
         id: UUID,
@@ -153,40 +93,42 @@ interface ProductController {
     ): ResponseEntity<Unit>
 
     /**
-     * Удаление товара по идентификатору.
+     * Удаляет существующий товар.
      *
-     * @param id UUID товара.
-     * @return статусы 204 или 404.
+     * @param id уникальный идентификатор товара.
+     * @return статус NO_CONTENT при успешном удалении, 404 если товар не найден.
+     *
+     * @throws ProductNotFoundException если товар не найден.
      */
     @Operation(
-        summary = "Удаление существующего товара",
-        description = "Удаляет существующий товар по его id."
+        summary = "Удаление товара",
+        description = "Удаляет товар по указанному идентификатору."
     )
     fun deleteProduct(id: UUID): ResponseEntity<Unit>
 
     /**
-     * Многокритериальный поиск по продуктам
+     * Многокритериальный поиск товаров.
      *
-     * @param params критерии поиска.
-     * @param pageable параметры для постаничной закгрузки
-     * @return страница продуктов отфильтрованных по критериям
+     * @param params параметры поиска (фильтры).
+     * @param pageable параметры пагинации.
+     * @return Страница товаров, соответствующих критериям поиска.
      */
     @Operation(
-        summary = "Поиск продуктов по критериям",
-        description = "Находит продукты по критериям и собирает страницу"
+        summary = "Поиск товаров по критериям",
+        description = "Производит поиск товаров по набору критериев."
     )
     fun searchProducts(params: ProductSearchParams, pageable: Pageable): Page<ProductResponse>
 
     /**
-     * Многокритериальный продвинутый поиск по продуктам
+     * Продвинутый многокритериальный поиск товаров с поддержкой вложенных условий.
      *
-     * @param filterRequest критерии поиска.
-     * @param pageable параметры для постаничной закгрузки
-     * @return страница продуктов отфильтрованных по критериям
+     * @param filterRequest объект с критериями сложного поиска.
+     * @param pageable параметры пагинации.
+     * @return Страница товаров, соответствующих сложным критериям поиска.
      */
     @Operation(
-        summary = "Поиск продуктов по критериям",
-        description = "Находит продукты по критериям и собирает страницу"
+        summary = "Продвинутый поиск товаров",
+        description = "Выполняет сложный поиск товаров с возможностью комбинирования условий."
     )
     fun smartSearch(filterRequest: SearchProductFilterRequest, pageable: Pageable): Page<ProductResponse>
 }

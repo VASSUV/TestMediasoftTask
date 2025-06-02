@@ -7,7 +7,18 @@ import java.time.ZonedDateTime
 import java.util.UUID
 
 /**
- * Доменная модель товара.
+ * Полная доменная модель товара.
+ *
+ * @property id Идентификатор товара.
+ * @property name Название товара.
+ * @property article Артикул товара.
+ * @property description Описание товара (необязательно).
+ * @property category Категория товара (необязательно).
+ * @property price Цена товара.
+ * @property quantity Количество товара на складе.
+ * @property quantityUpdatedAt Дата и время последнего изменения количества товара.
+ * @property createdAt Дата создания товара.
+ * @property isAvailable Доступность товара на складе.
  */
 data class ProductData(
     val id: UUID,

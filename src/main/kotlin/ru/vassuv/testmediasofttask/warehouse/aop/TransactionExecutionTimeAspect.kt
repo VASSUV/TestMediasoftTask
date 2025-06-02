@@ -9,8 +9,11 @@ import org.springframework.transaction.support.TransactionSynchronization
 import org.springframework.transaction.support.TransactionSynchronizationManager
 
 /**
- * Обработчик функции с аннотацией @Transactional
- * Логирует время выполнения функции помеченной аннотацией @Transactional
+ * Аспект для логирования времени выполнения транзакционных методов, помеченных аннотацией [Transactional].
+ *
+ * Выполняет логирование после завершения транзакции.
+ *
+ * @see [org.springframework.transaction.annotation.Transactional]
  */
 @Aspect
 @Component
@@ -18,24 +21,33 @@ class TransactionExecutionTimeAspect {
 
     private val log = LoggerFactory.getLogger(this.javaClass)
 
-    // перехватываем все методы с аннотацией @Transactional
+    /**
+     * Перехватывает выполнение транзакционных методов и логирует продолжительность их выполнения.
+     *
+     * Если транзакция активна, логирует после её завершения, иначе сразу после выполнения метода.
+     *
+     * @param joinPoint точка соединения, представляющая вызов метода.
+     * @return результат выполнения метода.
+     */
     @Around("@annotation(org.springframework.transaction.annotation.Transactional)")
     fun logTransactionalExecutionTime(joinPoint: ProceedingJoinPoint): Any? {
         val startTime = System.currentTimeMillis()
         val signature = joinPoint.signature
-        log.info("STARTED: Transactional Method $signature")
+
+        log.info("STARTED: Транзакционный метод $signature")
+
         val result = joinPoint.proceed()
 
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
                 override fun afterCompletion(status: Int) {
                     val executionTime = System.currentTimeMillis() - startTime
-                    log.info("FINISHED: Transactional Method ${signature.name} executed for $executionTime ms")
+                    log.info("FINISHED: Транзакционный метод ${signature.name} выполнен за $executionTime мс")
                 }
             })
         } else {
             val executionTime = System.currentTimeMillis() - startTime
-            log.info("FINISHED: Non-Transactional Method ${signature.name} executed for $executionTime ms")
+            log.info("FINISHED: Нетранзакционный метод ${signature.name} выполнен за $executionTime мс")
         }
 
         return result

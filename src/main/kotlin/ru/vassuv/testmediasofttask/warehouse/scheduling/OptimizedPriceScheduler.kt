@@ -13,12 +13,16 @@ import java.sql.ResultSet
 import java.util.UUID
 
 /**
- * Шедулер изменения цены (оптимизированный, сложный)
+ * Оптимизированный шедулер для пакетного изменения цены продуктов и записи результатов в файл.
  *
- * @property schedulingProperties Параметры для оптимизированного шедулера
- * @property datasourceProperties Параметры для JDBC подключения
+ * Использует JDBC для эффективного пакетного обновления и логирования продуктов.
+ *
+ * @property schedulingProperties Конфигурационные свойства для работы шедулера.
+ * @property datasourceProperties Конфигурационные свойства JDBC-подключения.
+ *
+ * @see [SchedulingProperties]
+ * @see [DataSourceProperties]
  */
-
 open class OptimizedPriceScheduler(
     private val schedulingProperties: SchedulingProperties,
     private val datasourceProperties: DataSourceProperties,
@@ -26,6 +30,14 @@ open class OptimizedPriceScheduler(
 
     private val log = LoggerFactory.getLogger(OptimizedPriceScheduler::class.java)
 
+    /**
+     * Запускает задачу по обновлению цен продуктов и записи результатов в файл.
+     *
+     * Выполняется по расписанию, указанному в конфигурации (`cron` выражение).
+     *
+     * @see [Scheduled]
+     * @see [LogExecutionTime]
+     */
     @Scheduled(cron = "\${scheduling.price-change.optimized.cron}")
     @LogExecutionTime
     open fun optimizedPriceUpdate() {
@@ -39,21 +51,30 @@ open class OptimizedPriceScheduler(
 
         val bufferedWriter = BufferedWriter(FileWriter(exportFilePath, true))
         val connection = DriverManager.getConnection(jdbcUrl, username, password)
+
         bufferedWriter.use { logFile ->
-            connection.use { connection ->
-                connection.autoCommit = false // Включаем транзакцию вручную
+            connection.use { conn ->
+                conn.autoCommit = false
                 val sql = "SELECT id, name, description, article, price, created_at FROM products FOR UPDATE"
-                val prepareStatement = connection
-                    .prepareStatement(sql)
-                prepareStatement.use { selectStatement ->
+                conn.prepareStatement(sql).use { selectStatement ->
                     selectStatement.executeQuery().use { resultSet ->
-                        updatePricesAndWriteToFile(connection, batchSize, resultSet, percent, logFile, exportFilePath)
+                        updatePricesAndWriteToFile(conn, batchSize, resultSet, percent, logFile, exportFilePath)
                     }
                 }
             }
         }
     }
 
+    /**
+     * Пакетное обновление цен и запись информации о продуктах в файл.
+     *
+     * @param connection JDBC-соединение с базой данных.
+     * @param batchSize Размер пакета для выполнения обновлений.
+     * @param resultSet Результат запроса продуктов.
+     * @param percent Процент изменения цены.
+     * @param logFile Буферизированный поток записи в файл.
+     * @param exportFilePath Путь к файлу экспорта данных.
+     */
     private fun updatePricesAndWriteToFile(
         connection: Connection,
         batchSize: Int,
@@ -62,49 +83,46 @@ open class OptimizedPriceScheduler(
         logFile: BufferedWriter,
         exportFilePath: String
     ) {
-        val updateStatement = connection.prepareStatement("UPDATE products SET price = ? WHERE id = ?")
+        connection.prepareStatement("UPDATE products SET price = ? WHERE id = ?").use { updateStatement ->
+            try {
+                var batchCounter = batchSize // TODO возможно следуюет выбирать batch size динамически, из размера таблицы
+                var batchNumber = 0
 
-        try {
-            var batchDecrease = batchSize
-            var batchNumber = 0
+                while (resultSet.next()) {
+                    val id = UUID.fromString(resultSet.getString("id"))
+                    val name = resultSet.getString("name")
+                    val description = resultSet.getString("description")
+                    val article = resultSet.getString("article")
+                    val createdAt = resultSet.getString("created_at")
+                    val oldPrice = resultSet.getBigDecimal("price")
+                    val newPrice = oldPrice + oldPrice * percent.toBigDecimal()
 
-            while (resultSet.next()) {
-                val id = UUID.fromString(resultSet.getString("id"))
-                val name = resultSet.getString("name")
-                val description = resultSet.getString("description")
-                val article = resultSet.getString("article")
-                val createdAt = resultSet.getString("created_at")
-                val oldPrice = resultSet.getBigDecimal("price")
-                val newPrice = oldPrice + oldPrice * percent.toBigDecimal()
+                    logFile.write("$id $name $newPrice $description $article $createdAt\n")
 
-                // Пишем лог
-                logFile.write("$id $name $newPrice $description $article $createdAt\n")
+                    updateStatement.setBigDecimal(1, newPrice)
+                    updateStatement.setObject(2, id)
+                    updateStatement.addBatch()
 
-                // Обновляем цену
-                updateStatement.setBigDecimal(1, newPrice)
-                updateStatement.setObject(2, id)
-                updateStatement.addBatch()
-                batchDecrease--
-                if (batchDecrease == 0) {
-                    batchDecrease = batchSize
-                    updateStatement.executeBatch()
-                    log.info("Успешно записал батч ($batchNumber) из $batchSize продуктов в файл $exportFilePath")
-                    batchNumber++
+                    batchCounter--
+                    if (batchCounter == 0) {
+                        batchCounter = batchSize
+                        updateStatement.executeBatch() // TODO можно обработать результат, и понять запись в которой была ошибка
+                        log.info("Успешно записан батч ($batchNumber) из $batchSize продуктов в файл $exportFilePath")
+                        batchNumber++
+                    }
                 }
-            }
 
-            updateStatement.executeBatch()
-            val currentButchSize = batchSize - batchDecrease
-            if (currentButchSize != 0) {
-                log.info("Успешно записал батч ($batchNumber) из $currentButchSize продуктов в файл $exportFilePath")
+                updateStatement.executeBatch() // TODO можно обработать результат, и понять запись в которой была ошибка
+                val currentBatchSize = batchSize - batchCounter
+                if (currentBatchSize != 0) {
+                    log.info("Успешно записан батч ($batchNumber) из $currentBatchSize продуктов в файл $exportFilePath")
+                }
+                connection.commit()
+                logFile.flush()
+            } catch (e: Exception) {
+                connection.rollback()
+                log.error("Ошибка при обновлении цен продуктов: ${e.message}", e)
             }
-            connection.commit()
-            logFile.flush()
-        } catch (e: Exception) {
-            connection.rollback()
-            log.error(e.message, e)
-        } finally {
-            updateStatement.close()
         }
     }
 }

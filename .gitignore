@@ -41,3 +41,6 @@ out/
 
 ### Environments ###
 .env
+
+### log files for schedulers
+export/

@@ -14,6 +14,19 @@ import java.io.FileWriter
 import java.math.BigDecimal
 import kotlin.use
 
+/**
+ * Шедулер, выполняющий пакетное обновление цен продуктов с использованием Hibernate [SessionFactory].
+ *
+ * Данные обновляются по страницам (батчами) с сохранением результатов в файл.
+ *
+ * @property sessionFactory Фабрика сессий Hibernate для доступа к сущностям.
+ * @property entityManager Менеджер сущностей JPA для выполнения запросов (не используется в текущем методе).
+ * @property schedulingProperties Параметры для управления процессом изменения цен.
+ *
+ * @see [SessionFactory]
+ * @see [SchedulingProperties]
+ * @see [ProductEntity]
+ */
 open class EntityManagerScheduler(
     private val sessionFactory: SessionFactory,
     private val entityManager: EntityManager,
@@ -21,23 +34,30 @@ open class EntityManagerScheduler(
 ) {
     private val log = LoggerFactory.getLogger(EntityManagerScheduler::class.java)
 
+    /**
+     * Пакетное обновление цен всех продуктов и запись результатов в файл согласно расписанию.
+     *
+     * Использует постраничную обработку для снижения нагрузки на память.
+     *
+     * @see [Scheduled]
+     * @see [Transactional]
+     * @see [LogExecutionTime]
+     */
     @Transactional
-    @Scheduled(cron = "\${scheduling.price-change.entity-manager.cron}") // каждую минуту
+    @Scheduled(cron = "\${scheduling.price-change.entity-manager.cron}")
     @LogExecutionTime
     open fun updateAllPricesBatchBySession() {
-        log.info("EntityManagerScheduler. Начал обновлять цену")
+        log.info("EntityManagerScheduler: Начало обновления цен продуктов")
+
         val entityManagerProps = schedulingProperties.priceChange.entityManager
         val percent = entityManagerProps.percent.toBigDecimal()
         val exportFilePath = entityManagerProps.exportFilePath.ifEmpty { error("Export file path parameter is empty") }
-        val pageSize = entityManagerProps.batchSize
+        val pageSize = entityManagerProps.batchSize // TODO возможно следует выбирать batch size динамически, из размера таблицы
+
         val file = File(exportFilePath)
+        file.parentFile?.apply { if (!exists()) mkdirs() }
 
-        file.parentFile?.run {
-            if (!exists()) mkdirs()
-        }
-
-        val bufferedWriter = BufferedWriter(FileWriter(exportFilePath, true))
-        bufferedWriter.use { logFile ->
+        BufferedWriter(FileWriter(exportFilePath, true)).use { logFile ->
             var count = 0
             var page = 0
 
@@ -62,34 +82,32 @@ open class EntityManagerScheduler(
 
                     for (product in products) {
                         product.price = product.price.multiply(percent)
-                        // session автоматически отслеживает изменения
 
-                        product.apply {
-                            logFile.write("$id $name $price $description $article $createdAt\n")
-                            count++
-                        }
+                        logFile.write("${product.id} ${product.name} ${product.price} ${product.description} ${product.article} ${product.createdAt}\n")
+                        count++
                     }
 
-                    session.flush()  // выполняет SQL
-                    session.clear()  // очищает кэш — чтобы объекты не росли в памяти
+                    session.flush()
+                    session.clear()
 
                     transaction.commit()
                     session.close()
 
-                    println("Updated batch ${page + 1} (${products.size} records)")
-
+                    log.info("Обновлена страница ${page + 1} (записей: ${products.size}), всего записей: $count")
                     page++
-                    log.info("Успешно записал ${pageSize * (page - 1) + products.size} продуктов в файл $exportFilePath")
                 } catch (e: Exception) {
                     transaction.rollback()
                     session.close()
+                    log.error("Ошибка обновления цен продуктов на странице ${page + 1}: ${e.message}", e)
                     throw e
                 }
             }
-            log.info("Успешно обновил все цены и записал все записи в файл")
+
+            log.info("Завершено обновление цен продуктов. Всего записей: $count")
             logFile.flush()
         }
     }
+}
 
 //    @Transactional
 //    @Scheduled(cron = "\${scheduling.price-change.entity-manager..cron}") // каждую минуту
@@ -146,4 +164,4 @@ open class EntityManagerScheduler(
 //            logFile.flush()
 //        }
 //    }
-}
+//}
