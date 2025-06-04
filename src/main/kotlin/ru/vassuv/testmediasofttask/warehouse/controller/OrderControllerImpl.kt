@@ -14,11 +14,13 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toCreatedOrder
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toOrderResponse
+import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toProductOrderReportInfoResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toUpdatedOrder
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateOrderRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderStatusRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.response.OrderResponse
+import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductOrderReportInfoResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
 import ru.vassuv.testmediasofttask.warehouse.enums.OrderStatus
 import ru.vassuv.testmediasofttask.warehouse.exception.CustomerInactiveException
@@ -29,6 +31,7 @@ import ru.vassuv.testmediasofttask.warehouse.exception.OrderUnavailableException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductUnavailableException
 import ru.vassuv.testmediasofttask.warehouse.service.OrderService
+import ru.vassuv.testmediasofttask.warehouse.service.model.ProductOrderReportInfo
 import java.util.*
 
 /**
@@ -71,6 +74,7 @@ class OrderControllerImpl(
      *
      * Перераспределяет товары с учётом новых данных и резервирует их на складе.
      *
+     * @param customerId идентификатор заказчика, передаётся в заголовке запроса.
      * @param orderId идентификатор заказа.
      * @param request новые данные для обновления ([UpdateOrderRequest]).
      * @return HTTP-ответ со статусом NO_CONTENT.
@@ -79,13 +83,16 @@ class OrderControllerImpl(
      * @throws IllegalOrderStatusException если статус заказа не позволяет изменений.
      * @throws ProductUnavailableException если товаров недостаточно на складе.
      * @throws OrderUnavailableException если заказ недоступен.
+     * @throws CustomerNotFoundException если заказчик не найден.
+     * @throws CustomerInactiveException если заказчик неактивен.
      */
     @PatchMapping("/{orderId}")
     override fun updateOrder(
+        @RequestHeader("customerId") customerId: UUID,
         @PathVariable orderId: UUID,
         @Valid @RequestBody request: UpdateOrderRequest
     ): ResponseEntity<Void> {
-        orderService.updateOrder(orderId, request.toUpdatedOrder())
+        orderService.updateOrder(customerId, orderId, request.toUpdatedOrder())
         return ResponseEntity.noContent().build()
     }
 
@@ -109,15 +116,21 @@ class OrderControllerImpl(
      *
      * Меняет статус заказа на [OrderStatus.CANCELED].
      *
+     * @param customerId идентификатор заказчика, передаётся в заголовке запроса.
      * @param orderId идентификатор заказа.
      * @return HTTP-ответ со статусом NO_CONTENT.
      *
      * @throws OrderNotFoundException если заказ не найден.
      * @throws IllegalOrderStatusException если статус заказа не позволяет отмену.
+     * @throws CustomerNotFoundException если заказчик не найден.
+     * @throws CustomerInactiveException если заказчик неактивен.
      */
     @DeleteMapping("/{orderId}")
-    override fun cancelOrder(@PathVariable orderId: UUID): ResponseEntity<Void> {
-        orderService.cancelOrder(orderId)
+    override fun cancelOrder(
+        @RequestHeader("customerId") customerId: UUID,
+        @PathVariable orderId: UUID
+    ): ResponseEntity<Void> {
+        orderService.cancelOrder(customerId, orderId)
         return ResponseEntity.noContent().build()
     }
 
@@ -152,5 +165,17 @@ class OrderControllerImpl(
     ): ResponseEntity<Void> {
         orderService.updateOrderStatus(orderId, request.status)
         return ResponseEntity.noContent().build()
+    }
+
+    /**
+     * Возвращает отчет по продуктам и заказам с этими продуктами.
+     *
+     * @return Сформированный отчет по продуктам и заказам.
+     */
+    @GetMapping("/report/product-orders")
+    override fun getProductOrderReport(): Map<UUID, List<ProductOrderReportInfoResponse>>{
+        return orderService.getProductOrderReport().mapValues { (_, reports) ->
+            reports.map { it.toProductOrderReportInfoResponse() }
+        }
     }
 }

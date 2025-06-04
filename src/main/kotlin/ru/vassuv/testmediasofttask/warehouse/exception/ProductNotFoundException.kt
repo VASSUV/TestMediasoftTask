@@ -11,3 +11,11 @@ import java.util.UUID
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
 class ProductNotFoundException(val id: UUID): RuntimeException("Товар с id=$id не найден")
+
+/**
+ * Метод вызывающий исключение ProductNotFoundException
+ *
+ * @property productId UUID продукта, вызвавшего ошибку
+ * @throws ProductNotFoundException если товар не найден.
+ */
+fun productNotFoundError(productId: UUID): Nothing = throw ProductNotFoundException(productId)

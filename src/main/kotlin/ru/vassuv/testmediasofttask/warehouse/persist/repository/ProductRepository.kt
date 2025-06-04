@@ -46,7 +46,6 @@ interface ProductRepository : JpaRepository<ProductEntity, UUID>, JpaSpecificati
 
     /**
      * Получает все товары в виде стрима.
-     *
      * Используется для больших объёмов данных, например, при экспорте.
      *
      * @return поток сущностей товаров ([ProductEntity]).
@@ -54,4 +53,5 @@ interface ProductRepository : JpaRepository<ProductEntity, UUID>, JpaSpecificati
     @Query("SELECT p FROM ProductEntity p ORDER BY p.id")
     @Transactional(readOnly = true)
     fun streamAll(): Stream<ProductEntity>
+
 }

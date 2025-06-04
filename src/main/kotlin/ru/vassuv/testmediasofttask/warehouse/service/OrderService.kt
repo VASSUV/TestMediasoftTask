@@ -26,7 +26,7 @@ interface OrderService {
      * @param orderId идентификатор заказа.
      * @param updatedOrder обновлённые данные заказа ([UpdatedOrder]).
      */
-    fun updateOrder(orderId: UUID, updatedOrder: UpdatedOrder)
+    fun updateOrder(customerId: UUID, orderId: UUID, updatedOrder: UpdatedOrder)
 
     /**
      * Возвращает данные заказа по его идентификатору.
@@ -41,7 +41,7 @@ interface OrderService {
      *
      * @param orderId идентификатор заказа.
      */
-    fun cancelOrder(orderId: UUID)
+    fun cancelOrder(customerId: UUID, orderId: UUID)
 
     /**
      * Обновляет статус заказа.
@@ -50,4 +50,11 @@ interface OrderService {
      * @param newStatus новый статус заказа ([OrderStatus]).
      */
     fun updateOrderStatus(orderId: UUID, newStatus: OrderStatus)
+
+    /**
+     * Возвращает отчет по продуктам и заказам с этими продуктами.
+     *
+     * @return Отчет о продуктах и заказах([ProductOrderReportInfo]).
+     */
+    fun getProductOrderReport(): Map<UUID, List<ProductOrderReportInfo>>
 }
