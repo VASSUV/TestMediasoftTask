@@ -15,6 +15,7 @@ import ru.vassuv.testmediasofttask.warehouse.exception.checkCustomerInactive
 import ru.vassuv.testmediasofttask.warehouse.exception.checkProductUnavailable
 import ru.vassuv.testmediasofttask.warehouse.exception.customerNotFoundError
 import ru.vassuv.testmediasofttask.warehouse.exception.productNotFoundError
+import ru.vassuv.testmediasofttask.warehouse.exception.productOrderReportError
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.OrderEntity
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.OrderProductEntity
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.CustomerRepository
@@ -29,6 +30,7 @@ import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedOrder
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ForkJoinPool
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -280,6 +282,7 @@ class OrderServiceImpl(
      * @throws OrderNotFoundException если заказ не найден.
      * @throws IllegalOrderStatusException если переход между статусами запрещён.
      */
+    @Suppress("UseCheckOrError")
     @Transactional
     override fun updateOrderStatus(orderId: UUID, newStatus: OrderStatus) {
         val currentStatus = orderRepository.findStatusById(orderId)
@@ -309,16 +312,16 @@ class OrderServiceImpl(
         val orders = orderRepository.findAllWithProductsByStatuses(statuses)
         val logins = orders.asSequence().map { it.customer }.distinctBy { it.id }.map { it.login }.toSet()
 
-        val innFuture = CompletableFuture.supplyAsync {
-            customerDataService.getInns(logins)
-        }.exceptionally { ex ->
-            error("Ошибка при получении ИНН: ${ex.message}")
-        }
-        val accFuture = CompletableFuture.supplyAsync {
-            customerDataService.getAccountNumbers(logins)
-        }.exceptionally { ex ->
-            error("Ошибка при получении номера счета: ${ex.message}")
-        }
+        val innFuture = CompletableFuture
+            .supplyAsync { customerDataService.getInns(logins) }
+            .exceptionally { ex ->
+                productOrderReportError("Ошибка при получении ИНН: ${ex.message}", ex)
+            }
+        val accFuture = CompletableFuture
+            .supplyAsync { customerDataService.getAccountNumbers(logins) }
+            .exceptionally { ex ->
+                productOrderReportError("Ошибка при получении номера счета: ${ex.message}", ex)
+            }
 
         return buildProductOrderReport(orders, innFuture.join(), accFuture.join())
     }
@@ -380,47 +383,4 @@ class OrderServiceImpl(
             OrderStatus.DONE, OrderStatus.CANCELED, OrderStatus.REJECTED -> false
         }
     }
-}
-
-
-interface CustomerDataService {
-    fun getInns(logins: Set<String>): Map<String, String>
-    fun getAccountNumbers(logins: Set<String>): Map<String, String>
-}
-
-@Service
-class CustomerDataServiceImpl(
-    private val innService: InnServiceClient,
-    private val accountService: AccountServiceClient
-) : CustomerDataService {
-
-    override fun getInns(logins: Set<String>): Map<String, String> {
-        if (logins.isEmpty()) return emptyMap()
-        return innService.getByLogins(logins)
-    }
-
-    override fun getAccountNumbers(logins: Set<String>): Map<String, String> {
-        if (logins.isEmpty()) return emptyMap()
-        return accountService.getByLogins(logins)
-    }
-}
-
-interface InnServiceClient {
-    fun getByLogins(logins: Set<String>): Map<String, String>
-}
-
-interface AccountServiceClient {
-    fun getByLogins(logins: Set<String>): Map<String, String>
-}
-
-@Component
-class StubInnServiceClient : InnServiceClient {
-    override fun getByLogins(logins: Set<String>): Map<String, String> =
-        logins.associateWith { "inn-" + it.hashCode().toString().takeLast(12).padStart(12, '0') }
-}
-
-@Component
-class StubAccountServiceClient : AccountServiceClient {
-    override fun getByLogins(logins: Set<String>): Map<String, String> =
-        logins.associateWith { "acc-" + it.hashCode().toString().takeLast(9).padStart(9, '0') }
 }

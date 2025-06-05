@@ -21,6 +21,7 @@ object ProductSearchSpecification {
      * @see ProductSearchParams
      * @see Specification
      */
+    @Suppress("SpreadOperator")
     fun fromCriteria(criteria: ProductSearchParams): Specification<ProductEntity> {
         return Specification { root, _, cb ->
             val predicates = mutableListOf<Predicate>()

@@ -140,6 +140,7 @@ class OrderControllerImpl(
      * @param orderId идентификатор заказа.
      * @return HTTP-ответ со статусом NOT_IMPLEMENTED.
      */
+    @Suppress("ForbiddenComment")
     @PostMapping("/{orderId}/confirm")
     override fun confirmOrder(@PathVariable orderId: UUID): ResponseEntity<Void> {
         // TODO: Реализовать подтверждение заказа

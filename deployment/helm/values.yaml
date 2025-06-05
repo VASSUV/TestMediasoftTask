@@ -1,0 +1,65 @@
+namespace: warehouse-ns
+appName: warehouse
+
+replicaCount: 3
+
+secret:
+  name: warehouse-secret
+deployment:
+  db:
+    image: postgres:latest
+    port: 5432
+    replicas: 1
+
+image:
+  repository: warehouse
+  tag: v1
+  pullPolicy: IfNotPresent
+
+config:
+  innServiceHost: http://inn-service
+  accountServiceHost: http://account-service
+  currencyServiceHost: http://currency-service
+
+service:
+  type: LoadBalancer
+  db:
+    name: postgresql-warehouse-postgres-service
+    host: "postgresql-warehouse-postgres-service"
+    type: ClusterIP
+    port: 5432
+    sport: "5432"
+    dbname: warehouse_db
+    dbschema: public
+    username: admin # YWRtaW4= #admin
+    password: password # cGFzc3dvcmQ= #password
+
+ingress:
+  enabled: true
+  className: nginx
+  host: minikube
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+
+resources:
+  limits:
+    memory: 512Mi
+    cpu: "500m"
+  requests:
+    memory: 256Mi
+    cpu: "250m"
+
+dbResources:
+  limits:
+    memory: 512Mi
+    cpu: 500m
+  requests:
+    memory: 256Mi
+    cpu: 250m
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+

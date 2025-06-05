@@ -80,12 +80,14 @@ interface SearchProductFilterRequest {
 
     /** Логическое объединение условий с оператором AND. */
     data class AndFilter(val filters: List<Criteria>) : Criteria {
+        @Suppress("SpreadOperator")
         override fun toPredicate(root: Root<*>, cb: CriteriaBuilder): Predicate =
             cb.and(*filters.map { it.toPredicate(root, cb) }.toTypedArray())
     }
 
     /** Логическое объединение условий с оператором OR. */
     data class OrFilter(val filters: List<Criteria>) : Criteria {
+        @Suppress("SpreadOperator")
         override fun toPredicate(root: Root<*>, cb: CriteriaBuilder): Predicate =
             cb.or(*filters.map { it.toPredicate(root, cb) }.toTypedArray())
     }

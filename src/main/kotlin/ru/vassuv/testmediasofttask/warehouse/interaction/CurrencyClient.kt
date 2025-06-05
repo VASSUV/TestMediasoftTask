@@ -33,9 +33,10 @@ class CurrencyClientImpl(
     private val webClient: WebClient,
     @Value("\${rest.currency.methods.currencies}") private val method: String
 ) : CurrencyClient {
+
     private val log = LoggerFactory.getLogger(this.javaClass)
 
-
+    @Suppress("TooGenericExceptionCaught")
     @Cacheable("currencies", unless = "#result == null")
     override suspend fun fetchCurrencies(): ExchangesCurrency? = try {
         webClient.get()
@@ -60,5 +61,5 @@ class CurrencyClientMock : CurrencyClient {
         china = 0.9.toBigDecimal(),
         usa = 0.8.toBigDecimal(),
         russia = 1.toBigDecimal(),
-    )
+        )
 }

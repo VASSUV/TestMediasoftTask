@@ -1,7 +1,10 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
 import ru.vassuv.testmediasofttask.warehouse.enums.OrderStatus
-import ru.vassuv.testmediasofttask.warehouse.service.model.*
+import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedOrder
+import ru.vassuv.testmediasofttask.warehouse.service.model.OrderData
+import ru.vassuv.testmediasofttask.warehouse.service.model.ProductOrderReportInfo
+import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedOrder
 import java.util.UUID
 
 /**

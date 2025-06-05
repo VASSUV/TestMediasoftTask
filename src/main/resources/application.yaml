@@ -1,12 +1,12 @@
 
 management:
   server:
-    9090
+    port: 9090
   endpoints:
     web:
       base-path: /actuator
       exposure:
-        include: health, info, beans
+        include: health, info, beans, mappings
 
 spring:
   config:

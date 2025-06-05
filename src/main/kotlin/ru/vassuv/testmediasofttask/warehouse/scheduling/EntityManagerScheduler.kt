@@ -46,13 +46,15 @@ open class EntityManagerScheduler(
     @Transactional
     @Scheduled(cron = "\${scheduling.price-change.entity-manager.cron}")
     @LogExecutionTime
+    @Suppress("TooGenericExceptionCaught")
     open fun updateAllPricesBatchBySession() {
         log.info("EntityManagerScheduler: Начало обновления цен продуктов")
 
         val entityManagerProps = schedulingProperties.priceChange.entityManager
         val percent = entityManagerProps.percent.toBigDecimal()
         val exportFilePath = entityManagerProps.exportFilePath.ifEmpty { error("Export file path parameter is empty") }
-        val pageSize = entityManagerProps.batchSize // TODO возможно следует выбирать batch size динамически, из размера таблицы
+        val pageSize = entityManagerProps.batchSize
+        // TODO возможно следует выбирать batch size динамически, из размера таблицы
 
         val file = File(exportFilePath)
         file.parentFile?.apply { if (!exists()) mkdirs() }
@@ -83,7 +85,8 @@ open class EntityManagerScheduler(
                     for (product in products) {
                         product.price = product.price.multiply(percent)
 
-                        logFile.write("${product.id} ${product.name} ${product.price} ${product.description} ${product.article} ${product.createdAt}\n")
+                        val log = product.run { "$id $name $price $description $article $createdAt\n" }
+                        logFile.write(log)
                         count++
                     }
 
@@ -116,7 +119,7 @@ open class EntityManagerScheduler(
 //        log.info("EntityManagerScheduler. Начал обновлять цену")
 //        val entityManagerProps = schedulingProperties.priceChange.entityManager
 //        val percent = entityManagerProps.percent.toBigDecimal()
-//        val exportFilePath = entityManagerProps.exportFilePath.ifEmpty { error("Export file path parameter is empty") }
+//      val exportFilePath = entityManagerProps.exportFilePath.ifEmpty { error("Export file path parameter is empty") }
 //        val pageSize = entityManagerProps.batchSize
 //        val file = File(exportFilePath)
 //

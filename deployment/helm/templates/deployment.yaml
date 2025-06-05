@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "chart.fullname" . }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.appName }}
+{{/*  annotations:*/}}
+{{/*    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}*/}}
+{{/*    checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}*/}}
+spec:
+#  strategy:
+#    type: RollingUpdate #еще есть Recreate
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+#            - containerPort: 80
+            - containerPort: 8080
+              name: app
+            - containerPort: 9090
+              name: actuator
+
+
+{{/*          env:*/}}
+{{/*            - name: SPRING_PROFILES_ACTIVE*/}}
+{{/*              value: "local"*/}}
+          envFrom:
+            - configMapRef:
+                name: {{ include "chart.fullname" . }}-config
+            - secretRef:
+                name: {{ include "chart.fullname" . }}-secret
+
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "500m"
+            requests:
+              memory: 256Mi
+              cpu: "250m"
+{{/*          resources:*/}}
+{{/*            {{- toYaml .Values.resources | nindent 12 }}*/}}
+
+          livenessProbe:
+            httpGet:
+              port: 9090
+              path: /actuator/health
+            failureThreshold: 3
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              port: 9090
+              path: /actuator/health
+            failureThreshold: 1
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              port: 9090
+              path: /actuator/health
+            failureThreshold: 30
+            periodSeconds: 10
+
