@@ -21,9 +21,11 @@ import java.time.ZonedDateTime
 import java.util.*
 
 /**
- * Сервис для управления товарами на складе.
+ * Реализация сервиса управления товарами ([ProductService]).
  *
- * @property productRepository Репозиторий товаров.
+ * Реализует бизнес-логику управления товарами на складе.
+ *
+ * @property productRepository репозиторий товаров ([ProductRepository]).
  */
 @Service
 class ProductServiceImpl(
@@ -31,30 +33,33 @@ class ProductServiceImpl(
 ) : ProductService {
 
     /**
-     * Получение списка товаров с пагинацией.
+     * Получает постраничный список товаров.
      *
-     * @param pageable параметры для постранично загрузки
-     * @return Страница с товарами в виде Domain-моделей.
+     * @param pageable параметры пагинации и сортировки.
+     * @return страница с товарами, представленными в виде доменных моделей ([ProductData]).
      */
-    override fun getProducts(pageable: Pageable): Page<ProductData> {
-        return productRepository.findAll(pageable).map { it.toProductData() }
-    }
+    override fun getProducts(pageable: Pageable): Page<ProductData> =
+        productRepository.findAll(pageable).map { it.toProductData() }
 
     /**
-     * Получение товара по идентификатору.
+     * Получает товар по его идентификатору.
      *
-     * @param id UUID товара.
-     * @return Найденный товар.
-     * @throws ProductNotFoundException Если товар не найден.
+     * @param id уникальный идентификатор товара.
+     * @return товар в виде доменной модели ([ProductData]).
+     *
+     * @throws [ProductNotFoundException] если товар не найден.
      */
-    override fun getProductById(id: UUID) =
-        productRepository.findByIdOrNull(id)?.toProductData() ?: throw ProductNotFoundException(id)
+    override fun getProductById(id: UUID): ProductData =
+        productRepository.findByIdOrNull(id)?.toProductData()
+            ?: throw ProductNotFoundException(id)
 
     /**
-     * Создание нового товара.
+     * Создаёт новый товар.
      *
-     * @param product Доменная модель нового товара.
-     * @return Созданный товар.
+     * @param product модель создаваемого товара ([CreatedProduct]).
+     * @return идентификатор созданного товара.
+     *
+     * @throws [ProductExistsWithArticleException] если товар с таким артикулом уже существует.
      */
     @Transactional
     override fun createProduct(product: CreatedProduct): UUID {
@@ -66,11 +71,13 @@ class ProductServiceImpl(
     }
 
     /**
-     * Обновление существующего товара.
+     * Обновляет существующий товар.
      *
-     * @param id UUID товара.
-     * @param updatedProduct Доменная модель с обновленными данными.
-     * @return Обновленный товар или null, если не найден.
+     * @param id идентификатор товара.
+     * @param updatedProduct обновленные данные товара ([UpdatedProduct]).
+     *
+     * @throws [ProductNotFoundException] если товар не найден.
+     * @throws [ProductExistsWithArticleException] если новый артикул уже используется другим товаром.
      */
     @Transactional
     override fun updateProduct(id: UUID, updatedProduct: UpdatedProduct) {
@@ -83,22 +90,23 @@ class ProductServiceImpl(
 
         val existingProduct = result.product ?: throw ProductNotFoundException(id)
         existingProduct.apply {
-            existingProduct.name = updatedProduct.name
-            existingProduct.article = updatedProduct.article
-            existingProduct.description = updatedProduct.description
-            existingProduct.category = updatedProduct.category
-            existingProduct.price = updatedProduct.price
-            existingProduct.quantity = updatedProduct.quantity
-            existingProduct.quantityUpdatedAt = ZonedDateTime.now()
+            name = updatedProduct.name
+            article = updatedProduct.article
+            description = updatedProduct.description
+            category = updatedProduct.category
+            price = updatedProduct.price
+            quantity = updatedProduct.quantity
+            quantityUpdatedAt = ZonedDateTime.now()
         }
         productRepository.save(existingProduct)
     }
 
     /**
-     * Удаление товара по идентификатору.
+     * Удаляет товар по его идентификатору.
      *
-     * @param id UUID товара.
-     * @return true, если удаление прошло успешно, иначе false.
+     * @param id идентификатор товара.
+     *
+     * @throws [ProductNotFoundException] если товар не найден.
      */
     @Transactional(readOnly = true)
     override fun deleteProduct(id: UUID) {
@@ -107,33 +115,35 @@ class ProductServiceImpl(
     }
 
     /**
-     * Получение всех товаров (не для API)
+     * Получает список всех товаров с блокировкой на запись.
      *
-     * @return список товаров
+     * Используется в транзакциях и шедулерах, не доступен через API.
+     *
+     * @return список товаров ([ProductEntity]).
      */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     override fun findAll(): List<ProductEntity> =
         productRepository.findAll()
 
     /**
-     * Сохранение всех товаров (не для API)
+     * Сохраняет список товаров.
      *
-     * @param products список сохраняемых продуктов
-     * @return список сохраненных продуктов
+     * Используется для пакетных операций (batch) и шедулеров.
+     *
+     * @param products последовательность товаров для сохранения ([ProductEntity]).
+     * @return список сохраненных товаров.
      */
     @Transactional
     override fun saveAll(products: Sequence<ProductEntity>): List<ProductEntity> =
         productRepository.saveAll(products.asIterable())
 
     /**
-     * Многокритериальный поиск по продуктам
+     * Многокритериальный поиск товаров по спецификации.
      *
-     * @param specification спецификация для поиска продуктов
-     * @param pageable параметры для постранично загрузки
-     * @return Страница с товарами в виде Domain-моделей.
+     * @param specification спецификация с критериями поиска ([Specification]).
+     * @param pageable параметры пагинации.
+     * @return страница найденных товаров ([ProductData]).
      */
-    override fun search(specification: Specification<ProductEntity>, pageable: Pageable): Page<ProductData> {
-        return productRepository.findAll(specification, pageable)
-            .map { it.toProductData() }
-    }
+    override fun search(specification: Specification<ProductEntity>, pageable: Pageable): Page<ProductData> =
+        productRepository.findAll(specification, pageable).map { it.toProductData() }
 }

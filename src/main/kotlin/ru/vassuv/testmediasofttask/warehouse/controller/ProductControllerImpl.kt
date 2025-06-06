@@ -23,17 +23,24 @@ import ru.vassuv.testmediasofttask.warehouse.controller.params.ProductSearchPara
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.SearchProductFilterRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateProductRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductResponse
+import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.specification.ProductSearchSpecification.fromCriteria
 import ru.vassuv.testmediasofttask.warehouse.controller.specification.ProductSearchSpecification.fromSmartCriteria
+import ru.vassuv.testmediasofttask.warehouse.enums.CurrencyType
+import ru.vassuv.testmediasofttask.warehouse.exception.ProductExistsWithArticleException
+import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
 import ru.vassuv.testmediasofttask.warehouse.service.CurrencyConversionService
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
 import java.util.*
 
 /**
- * REST-контроллер для управления товарами.
- * Предоставляет CRUD-операции для товаров на складе.
+ * Реализация REST-контроллера для управления товарами.
  *
- * @property productService
+ * Предоставляет API-методы для CRUD-операций и различных вариантов поиска товаров.
+ *
+ * @property productService Сервис для выполнения операций с товарами ([ProductService]).
+ * @property currencyConversionService Сервис для получения и применения курсов валют ([CurrencyConversionService]).
  */
 @RestController
 @RequestMapping("/api/products")
@@ -43,100 +50,112 @@ class ProductControllerImpl(
 ) : ProductController {
 
     /**
-     * Получение списка товаров с пагинацией.
+     * Возвращает список товаров с пагинацией.
      *
-     * @param pageable Параметры для постраничной загрузки
-     * @return Страница с товарами.
+     * @param pageable параметры пагинации и сортировки.
+     * @return страница объектов [ProductResponse], цены которых конвертированы в текущую валюту сессии ([CurrencyType]).
      */
     @GetMapping
-    override fun getProducts(pageable: Pageable) = currencyConversionService.getExchangeRateInfo()
-        .let { rateInfo ->
-            productService.getProducts(pageable).map { it.toProductResponse(rateInfo) }
-        }
-
+    override fun getProducts(pageable: Pageable) =
+        currencyConversionService.getExchangeRateInfo()
+            .let { rateInfo ->
+                productService.getProducts(pageable)
+                    .map { it.toProductResponse(rateInfo) }
+            }
 
     /**
-     * Получение товара по идентификатору.
+     * Возвращает информацию о товаре по его идентификатору.
      *
-     * @param id UUID товара.
-     * @return Ответ с товаром или статус 404.
+     * @param id уникальный идентификатор товара.
+     * @return объект [ProductResponse] с информацией о товаре.
+     *
+     * @throws ProductNotFoundException если товар с указанным идентификатором не найден.
      */
     @GetMapping("/{id}")
-    override fun getProductById(@PathVariable id: UUID) = currencyConversionService.getExchangeRateInfo()
-        .let { rateInfo ->
-            productService.getProductById(id).toProductResponse(rateInfo)
-        }
+    override fun getProductById(@PathVariable id: UUID) =
+        currencyConversionService.getExchangeRateInfo()
+            .let { rateInfo ->
+                productService.getProductById(id).toProductResponse(rateInfo)
+            }
 
     /**
-     * Создание нового товара.
+     * Создаёт новый товар.
      *
-     * @param request DTO с данными нового товара.
-     * @return Созданный товар.
+     * @param request данные товара ([CreateProductRequest]).
+     * @return HTTP-ответ с идентификатором созданного товара ([UuidResponse]) и статусом CREATED.
+     *
+     * @throws ProductExistsWithArticleException если товар с указанным артикулом уже существует.
+     * @throws jakarta.validation.ValidationException при некорректных данных.
      */
     @PostMapping
-    override fun createProduct(@Valid @RequestBody request: CreateProductRequest) = ResponseEntity
-        .status(HttpStatus.CREATED)
-        .body(productService.createProduct(request.toCreatedProduct()).toUuidResponse())
+    override fun createProduct(@Valid @RequestBody request: CreateProductRequest) =
+        ResponseEntity.status(HttpStatus.CREATED)
+            .body(productService.createProduct(request.toCreatedProduct()).toUuidResponse())
 
     /**
-     * Обновление товара по идентификатору.
+     * Обновляет данные существующего товара.
      *
-     * @param id UUID товара.
-     * @param request DTO с обновленными данными товара.
-     * @return Обновленный товар или статус 404.
+     * @param id идентификатор товара.
+     * @param request обновлённые данные товара ([UpdateProductRequest]).
+     * @return HTTP-ответ со статусом NO_CONTENT.
+     *
+     * @throws ProductNotFoundException если товар не найден.
+     * @throws ProductExistsWithArticleException если артикул уже занят.
+     * @throws jakarta.validation.ValidationException при некорректных данных.
      */
     @PutMapping("/{id}")
     override fun updateProduct(
         @PathVariable id: UUID,
         @Valid @RequestBody request: UpdateProductRequest
-    ) = ResponseEntity
-        .status(HttpStatus.NO_CONTENT)
+    ) = ResponseEntity.status(HttpStatus.NO_CONTENT)
         .body(productService.updateProduct(id, request.toUpdatedProduct()))
 
     /**
-     * Удаление товара по идентификатору.
+     * Удаляет товар.
      *
-     * @param id UUID товара.
+     * @param id идентификатор товара.
+     * @return HTTP-ответ со статусом NO_CONTENT.
+     *
+     * @throws ProductNotFoundException если товар не найден.
      */
     @DeleteMapping("/{id}")
-    override fun deleteProduct(@PathVariable id: UUID) = ResponseEntity
-        .status(HttpStatus.NO_CONTENT)
-        .body(productService.deleteProduct(id))
+    override fun deleteProduct(@PathVariable id: UUID) =
+        ResponseEntity.status(HttpStatus.NO_CONTENT)
+            .body(productService.deleteProduct(id))
 
     /**
-     * Многокритериальный поиск по продуктам
+     * Обычный многокритериальный поиск по товарам.
      *
-     * @param params критерии поиска.
-     * @param pageable параметры для постаничной закгрузки
-     * @return страница продуктов отфильтрованных по критериям
+     * @param params критерии поиска ([ProductSearchParams]).
+     * @param pageable параметры пагинации.
+     * @return Страница найденных товаров ([ProductResponse]).
      */
     @GetMapping("/search")
     override fun searchProducts(
         @ModelAttribute params: ProductSearchParams,
         @PageableDefault(size = 20, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
-    ) = currencyConversionService.getExchangeRateInfo().let { rateInfo ->
-        productService
-            .search(fromCriteria(params), pageable)
-            .map { it.toProductResponse(rateInfo) }
-    }
+    ) = currencyConversionService.getExchangeRateInfo()
+        .let { rateInfo ->
+            productService.search(fromCriteria(params), pageable)
+                .map { it.toProductResponse(rateInfo) }
+        }
 
     /**
-     * Многокритериальный продвинутый поиск по продуктам
+     * Продвинутый многокритериальный поиск товаров с вложенными условиями.
      *
-     * @param filterRequest критерии поиска.
-     * @param pageable параметры для постаничной закгрузки
-     * @return страница продуктов отфильтрованных по критериям
+     * @param filterRequest сложные условия поиска ([SearchProductFilterRequest]).
+     * @param pageable параметры пагинации.
+     * @return Страница найденных товаров ([ProductResponse]).
      */
     @PostMapping("/search/smart")
     override fun smartSearch(
-        @Valid @RequestBody
-        filterRequest: SearchProductFilterRequest,
+        @Valid @RequestBody filterRequest: SearchProductFilterRequest,
         @PageableDefault(size = 20, sort = ["createdAt"], direction = Sort.Direction.DESC)
         pageable: Pageable
-    ) = currencyConversionService.getExchangeRateInfo().let { rateInfo ->
-        productService
-            .search(fromSmartCriteria(filterRequest), pageable)
-            .map { it.toProductResponse(rateInfo) }
-    }
+    ) = currencyConversionService.getExchangeRateInfo()
+        .let { rateInfo ->
+            productService.search(fromSmartCriteria(filterRequest), pageable)
+                .map { it.toProductResponse(rateInfo) }
+        }
 }

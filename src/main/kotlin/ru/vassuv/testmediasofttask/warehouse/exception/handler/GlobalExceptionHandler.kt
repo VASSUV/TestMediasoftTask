@@ -101,7 +101,7 @@ class GlobalExceptionHandler {
             }
 
             is com.fasterxml.jackson.databind.exc.MismatchedInputException -> {
-                val fieldPath = rootCause.path.joinToString(".") { it.fieldName }
+                val fieldPath = rootCause.path.joinToString(".") { it.fieldName ?: "get(*)" }
                 originalMessage = rootCause.originalMessage
                 "Неправильный тип данных поля '$fieldPath'"
             }

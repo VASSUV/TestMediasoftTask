@@ -7,11 +7,22 @@ import ru.vassuv.testmediasofttask.warehouse.controller.request.SearchProductFil
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
 import java.util.UUID
 
+/**
+ * Спецификации для выполнения поиска продуктов с использованием JPA Criteria API.
+ */
 object ProductSearchSpecification {
 
+    /**
+     * Создаёт спецификацию поиска продуктов по простым критериям.
+     *
+     * @param criteria Параметры поиска продуктов.
+     * @return Спецификация для поиска продуктов.
+     *
+     * @see ProductSearchParams
+     * @see Specification
+     */
     fun fromCriteria(criteria: ProductSearchParams): Specification<ProductEntity> {
-        return Specification { root, query, cb ->
-
+        return Specification { root, _, cb ->
             val predicates = mutableListOf<Predicate>()
 
             criteria.ids?.takeIf { it.isNotEmpty() }?.let {
@@ -70,6 +81,15 @@ object ProductSearchSpecification {
         }
     }
 
+    /**
+     * Создаёт спецификацию поиска продуктов на основе сложных (вложенных) критериев поиска.
+     *
+     * @param filter Сложный фильтр поиска, который преобразуется в Predicate.
+     * @return Спецификация для поиска продуктов.
+     *
+     * @see SearchProductFilterRequest
+     * @see Specification
+     */
     fun fromSmartCriteria(filter: SearchProductFilterRequest): Specification<ProductEntity> {
         return Specification { root, _, cb -> filter.toPredicate(root, cb) }
     }

@@ -4,7 +4,14 @@ import ru.vassuv.testmediasofttask.warehouse.enums.ProductCategoryType
 import java.math.BigDecimal
 
 /**
- * Доменная модель для обновления товара.
+ * Доменная модель для обновления существующего товара.
+ *
+ * @property name Новое название товара.
+ * @property article Новый артикул товара.
+ * @property description Новое описание товара (необязательно).
+ * @property category Новая категория товара (необязательно).
+ * @property price Новая цена товара.
+ * @property quantity Новое количество товара на складе.
  */
 data class UpdatedProduct(
     val name: String,

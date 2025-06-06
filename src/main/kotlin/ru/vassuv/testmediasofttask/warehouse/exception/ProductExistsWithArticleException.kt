@@ -4,9 +4,9 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.ResponseStatus
 
 /**
- * Ошибка существования продукта с уникальным артикулом
+ * Исключение, возникающее при попытке создать продукт с уже существующим артикулом.
  *
- * @param article Артикул для которого сработала ошибка
+ * @property article Артикул, вызвавший конфликт.
  */
 @ResponseStatus(HttpStatus.CONFLICT)
 class ProductExistsWithArticleException(

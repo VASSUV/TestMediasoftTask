@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
+import ru.vassuv.testmediasofttask.warehouse.exception.ProductExistsWithArticleException
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.service.model.ProductData
@@ -11,75 +12,85 @@ import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedProduct
 import java.util.UUID
 
 /**
- * Сервис для управления товарами на складе.
+ * Интерфейс сервиса управления товарами на складе.
  *
- * @property productRepository Репозиторий товаров.
+ * Реализует бизнес-логику операций с товарами.
  */
 interface ProductService {
 
     /**
-     * Получение списка товаров с пагинацией.
+     * Получает список товаров с пагинацией.
      *
-     * @param pageable параметры для постранично загрузки
-     * @return Страница с товарами в виде Domain-моделей.
+     * @param pageable параметры пагинации и сортировки.
+     * @return страница с товарами, представленными в виде доменных моделей [ProductData].
      */
     fun getProducts(pageable: Pageable): Page<ProductData>
 
     /**
-     * Получение товара по идентификатору.
+     * Получает товар по его идентификатору.
      *
-     * @param id UUID товара.
-     * @return Найденный товар.
-     * @throws ProductNotFoundException Если товар не найден.
+     * @param id уникальный идентификатор товара.
+     * @return найденный товар ([ProductData]).
+     *
+     * @throws [ProductNotFoundException] если товар не найден.
      */
     fun getProductById(id: UUID): ProductData
 
     /**
-     * Создание нового товара.
+     * Создаёт новый товар на основе переданной модели.
      *
-     * @param product Доменная модель нового товара.
-     * @return Созданный товар.
+     * @param product модель нового товара ([CreatedProduct]).
+     * @return идентификатор созданного товара.
+     *
+     * @throws ProductExistsWithArticleException если товар с таким артикулом уже существует.
      */
     fun createProduct(product: CreatedProduct): UUID
 
     /**
-     * Обновление существующего товара.
+     * Обновляет существующий товар.
      *
-     * @param id UUID товара.
-     * @param updatedProduct Доменная модель с обновленными данными.
-     * @return Обновленный товар или null, если не найден.
+     * @param id идентификатор товара.
+     * @param updatedProduct модель с обновлёнными данными ([UpdatedProduct]).
+     *
+     * @throws [ProductNotFoundException] если товар не найден.
+     * @throws ProductExistsWithArticleException если новый артикул уже используется другим товаром.
      */
     fun updateProduct(id: UUID, updatedProduct: UpdatedProduct)
 
     /**
-     * Удаление товара по идентификатору.
+     * Удаляет товар по указанному идентификатору.
      *
-     * @param id UUID товара.
-     * @return true, если удаление прошло успешно, иначе false.
+     * @param id идентификатор товара.
+     *
+     * @throws [ProductNotFoundException] если товар не найден.
      */
     fun deleteProduct(id: UUID)
 
     /**
-     * Получение всех товаров (не для API)
+     * Возвращает список всех товаров.
      *
-     * @return список товаров
+     * Используется во внутренних процессах и операциях, не предоставляется через API.
+     *
+     * @return список сущностей товаров ([ProductEntity]).
      */
     fun findAll(): List<ProductEntity>
 
     /**
-     * Сохранение всех товаров (не для API)
+     * Сохраняет список товаров.
      *
-     * @param products список сохраняемых продуктов
-     * @return список сохраненных продуктов
+     * Используется в шедулерах и batch-операциях, не предоставляется через API.
+     *
+     * @param products последовательность товаров ([ProductEntity]) для сохранения.
+     * @return список сохранённых товаров.
      */
     fun saveAll(products: Sequence<ProductEntity>): List<ProductEntity>
 
     /**
-     * Многокритериальный поиск по продуктам
+     * Выполняет многокритериальный поиск товаров по спецификации.
      *
-     * @param specification спецификация для поиска продуктов
-     * @param pageable параметры для постранично загрузки
-     * @return Страница с товарами в виде Domain-моделей.
+     * @param specification критерии поиска товаров ([Specification]).
+     * @param pageable параметры пагинации и сортировки.
+     * @return страница найденных товаров ([ProductData]).
      */
     fun search(specification: Specification<ProductEntity>, pageable: Pageable): Page<ProductData>
 }
