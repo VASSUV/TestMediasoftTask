@@ -1,6 +1,12 @@
 package ru.vassuv.testmediasofttask.warehouse.interaction
 
+import kotlinx.coroutines.runBlocking
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.awaitBodyOrNull
+import ru.vassuv.testmediasofttask.warehouse.config.properties.RestServiceProperties
+import ru.vassuv.testmediasofttask.warehouse.service.model.AccountNumbers
 import ru.vassuv.testmediasofttask.warehouse.service.model.Inns
 import ru.vassuv.testmediasofttask.warehouse.service.model.Logins
 
@@ -22,7 +28,12 @@ interface InnServiceClient {
  * Интерфейс клиента для получения информации об инн заказчиков
  */
 @Component
-class StubInnServiceClient : InnServiceClient {
+class InnServiceClientImpl(
+    webClientBuilder: WebClient.Builder,
+    private val restServiceProperties: RestServiceProperties
+) : InnServiceClient {
+
+    private val client = webClientBuilder.baseUrl(restServiceProperties.inn.host).build()
 
     /**
      * Асинхронно получает информацию об инн заказчиков
@@ -30,7 +41,14 @@ class StubInnServiceClient : InnServiceClient {
      * @param logins [Logins] список логинов
      * @return [Inns] Список инн с их логинами
      */
-    @Suppress("MagicNumber")
-    override fun getByLogins(logins: Logins):Inns =
-        logins.associateWith { "inn-" + it.hashCode().toString().takeLast(12).padStart(12, '0') }
+    override fun getByLogins(logins: Logins): AccountNumbers {
+        return runBlocking {
+            client.post()
+                .uri(restServiceProperties.inn.methods.inns)
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(logins)
+                .retrieve()
+                .awaitBodyOrNull() ?: mapOf()
+        }
+    }
 }

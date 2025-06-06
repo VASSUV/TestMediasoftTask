@@ -21,13 +21,13 @@ spec:
             ports:
               - containerPort: {{ .Values.deployment.db.port }}
                 name: postgredb
-            resources:
-              limits:
-                memory: 512Mi
-                cpu: 500m
-              requests:
-                memory: 256Mi
-                cpu: 250m
+{{/*            resources:*/}}
+{{/*              limits:*/}}
+{{/*                memory: 512Mi*/}}
+{{/*                cpu: 500m*/}}
+{{/*              requests:*/}}
+{{/*                memory: 256Mi*/}}
+{{/*                cpu: 250m*/}}
 {{/*            resources:*/}}
 {{/*              {{- toYaml .Values.dbResources | nindent 12 }}*/}}
             env:

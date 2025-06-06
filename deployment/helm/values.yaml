@@ -12,14 +12,14 @@ deployment:
     replicas: 1
 
 image:
-  repository: warehouse
-  tag: v1
+  repository: warehouse-app
+  tag: v3
   pullPolicy: IfNotPresent
 
 config:
-  innServiceHost: http://inn-service
-  accountServiceHost: http://account-service
-  currencyServiceHost: http://currency-service
+  innServiceHost: http://inn-inn-service.inn-ns.svc.cluster.local:8083
+  accountNumberServiceHost: http://account-number-account-number-service.account-number-ns.svc.cluster.local:8084
+  currencyServiceHost: http://currency-currency-service.currency-ns.svc.cluster.local:8082
 
 service:
   type: LoadBalancer
@@ -41,21 +41,6 @@ ingress:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$1
 
-resources:
-  limits:
-    memory: 512Mi
-    cpu: "500m"
-  requests:
-    memory: 256Mi
-    cpu: "250m"
-
-dbResources:
-  limits:
-    memory: 512Mi
-    cpu: 500m
-  requests:
-    memory: 256Mi
-    cpu: 250m
 
 nodeSelector: {}
 

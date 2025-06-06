@@ -35,19 +35,26 @@ spec:
 {{/*          env:*/}}
 {{/*            - name: SPRING_PROFILES_ACTIVE*/}}
 {{/*              value: "local"*/}}
+          env:
+            - name: INN_SERVICE_HOST
+              value: {{ .Values.config.innServiceHost }}
+            - name: ACCOUNT_NUMBER_SERVICE_HOST
+              value: {{ .Values.config.accountNumberServiceHost }}
+            - name: CURRENCY_SERVICE_HOST
+              value: {{ .Values.config.currencyServiceHost }}
           envFrom:
             - configMapRef:
                 name: {{ include "chart.fullname" . }}-config
             - secretRef:
                 name: {{ include "chart.fullname" . }}-secret
 
-          resources:
-            limits:
-              memory: 512Mi
-              cpu: "500m"
-            requests:
-              memory: 256Mi
-              cpu: "250m"
+{{/*          resources:*/}}
+{{/*            limits:*/}}
+{{/*              memory: 512Mi*/}}
+{{/*              cpu: "500m"*/}}
+{{/*            requests:*/}}
+{{/*              memory: 256Mi*/}}
+{{/*              cpu: "250m"*/}}
 {{/*          resources:*/}}
 {{/*            {{- toYaml .Values.resources | nindent 12 }}*/}}
 

@@ -1,7 +1,7 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
 import org.springframework.stereotype.Service
-import ru.vassuv.testmediasofttask.warehouse.interaction.AccountServiceClient
+import ru.vassuv.testmediasofttask.warehouse.interaction.AccountNumberServiceClient
 import ru.vassuv.testmediasofttask.warehouse.interaction.InnServiceClient
 import ru.vassuv.testmediasofttask.warehouse.service.model.AccountNumbers
 import ru.vassuv.testmediasofttask.warehouse.service.model.Inns
@@ -15,7 +15,7 @@ import ru.vassuv.testmediasofttask.warehouse.service.model.Logins
 @Service
 class CustomerDataServiceImpl(
     private val innService: InnServiceClient,
-    private val accountService: AccountServiceClient
+    private val accountService: AccountNumberServiceClient
 ) : CustomerDataService {
 
     /**

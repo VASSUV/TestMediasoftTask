@@ -51,7 +51,7 @@
      minikube -p minikube docker-env --shell=powershell | Invoke-Expression
 ```
 ```bash
-    docker build -t warehouse:v1 .
+    docker build -t warehouse-app:v3 .
 ```
 
 ---
@@ -74,6 +74,9 @@
 
 ### 🔧 Проверка всех компонентов
 
+```bash
+   kubectl get pods -n warehouse-ns
+```
 ```bash
    kubectl get all -n warehouse-ns
 ```
@@ -170,6 +173,14 @@ http://localhost/
 ## 🧪 8. Отладка
 
 ```bash
-   kubectl describe pod <pod-name> -n warehouse-ns
+   kubectl describe pod warehouse-warehouse-app-8cfdb784f-zqzpp  -n warehouse-ns
    kubectl logs <pod-name> -n warehouse-ns
+```
+
+---
+
+## 🧪 9. Проброс IP для database postgress
+
+```bash
+   
 ```
