@@ -9,6 +9,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.MapsId
 import jakarta.persistence.Table
+import org.hibernate.annotations.Fetch
+import org.hibernate.annotations.FetchMode
 import java.math.BigDecimal
 import java.util.UUID
 
@@ -32,7 +34,8 @@ data class OrderProductEntity(
     val order: OrderEntity,
 
     /** Связь с товаром ([ProductEntity]). Идентификатор товара является частью ключа. */
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.JOIN)
     @MapsId("productId")
     @JoinColumn(name = "product_id")
     val product: ProductEntity, // TODO может тут проекцию проставить вместо entity

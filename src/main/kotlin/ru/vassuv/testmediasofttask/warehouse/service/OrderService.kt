@@ -1,7 +1,10 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
 import ru.vassuv.testmediasofttask.warehouse.enums.OrderStatus
-import ru.vassuv.testmediasofttask.warehouse.service.model.*
+import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedOrder
+import ru.vassuv.testmediasofttask.warehouse.service.model.OrderData
+import ru.vassuv.testmediasofttask.warehouse.service.model.ProductOrderReportInfo
+import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedOrder
 import java.util.UUID
 
 /**
@@ -26,7 +29,7 @@ interface OrderService {
      * @param orderId идентификатор заказа.
      * @param updatedOrder обновлённые данные заказа ([UpdatedOrder]).
      */
-    fun updateOrder(orderId: UUID, updatedOrder: UpdatedOrder)
+    fun updateOrder(customerId: UUID, orderId: UUID, updatedOrder: UpdatedOrder)
 
     /**
      * Возвращает данные заказа по его идентификатору.
@@ -41,7 +44,7 @@ interface OrderService {
      *
      * @param orderId идентификатор заказа.
      */
-    fun cancelOrder(orderId: UUID)
+    fun cancelOrder(customerId: UUID, orderId: UUID)
 
     /**
      * Обновляет статус заказа.
@@ -50,4 +53,11 @@ interface OrderService {
      * @param newStatus новый статус заказа ([OrderStatus]).
      */
     fun updateOrderStatus(orderId: UUID, newStatus: OrderStatus)
+
+    /**
+     * Возвращает отчет по продуктам и заказам с этими продуктами.
+     *
+     * @return Отчет о продуктах и заказах([ProductOrderReportInfo]).
+     */
+    fun getProductOrderReport(): Map<UUID, List<ProductOrderReportInfo>>
 }

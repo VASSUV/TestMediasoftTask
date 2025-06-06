@@ -1,5 +1,6 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
+import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.vassuv.testmediasofttask.warehouse.enums.OrderStatus
@@ -10,18 +11,26 @@ import ru.vassuv.testmediasofttask.warehouse.exception.OrderNotFoundException
 import ru.vassuv.testmediasofttask.warehouse.exception.OrderUnavailableException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductUnavailableException
+import ru.vassuv.testmediasofttask.warehouse.exception.checkCustomerInactive
+import ru.vassuv.testmediasofttask.warehouse.exception.checkProductUnavailable
+import ru.vassuv.testmediasofttask.warehouse.exception.customerNotFoundError
+import ru.vassuv.testmediasofttask.warehouse.exception.productNotFoundError
+import ru.vassuv.testmediasofttask.warehouse.exception.productOrderReportError
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.OrderEntity
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.OrderProductEntity
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.CustomerRepository
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.OrderRepository
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.ProductRepository
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedOrder
+import ru.vassuv.testmediasofttask.warehouse.service.model.CustomerReportInfo
 import ru.vassuv.testmediasofttask.warehouse.service.model.OrderData
 import ru.vassuv.testmediasofttask.warehouse.service.model.OrderProductItem
+import ru.vassuv.testmediasofttask.warehouse.service.model.ProductOrderReportInfo
 import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedOrder
-import java.math.BigDecimal
 import java.time.ZonedDateTime
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.ForkJoinPool
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -33,8 +42,9 @@ import kotlin.jvm.optionals.getOrNull
 class OrderServiceImpl(
     private val customerRepository: CustomerRepository,
     private val productRepository: ProductRepository,
-    private val orderRepository: OrderRepository
-): OrderService {
+    private val orderRepository: OrderRepository,
+    private val customerDataService: CustomerDataService
+) : OrderService {
 
     /**
      * Создание заказа.
@@ -50,11 +60,9 @@ class OrderServiceImpl(
     @Transactional
     override fun createOrder(customerId: UUID, createdOrder: CreatedOrder): UUID {
         val customer = customerRepository.findById(customerId).getOrNull()
-            ?: throw CustomerNotFoundException(customerId)
+            ?: customerNotFoundError(customerId)
 
-        if(!customer.isActive) {
-            CustomerInactiveException(customerId)
-        }
+        customer.checkCustomerInactive()
 
         val order = OrderEntity(
             customer = customer,
@@ -62,29 +70,31 @@ class OrderServiceImpl(
             deliveryAddress = createdOrder.deliveryAddress
         )
 
-        val orderProducts = createdOrder.items.map { item ->
+        val createdOrderProductsMap = createdOrder.items.associateBy { it.productId }
+        val products = productRepository.findAllById(createdOrderProductsMap.keys)
 
-            val product = productRepository.findById(item.productId)
-                .orElseThrow { ProductNotFoundException(item.productId) }
-
-            if (!product.isAvailable) {
-                throw ProductUnavailableException(item.productId, "Товар недоступен для заказа")
-            }
-
-            if (product.quantity < item.quantity) {
-                throw ProductUnavailableException(item.productId, "Недостаточное количество товара на складе")
-            }
-
-            product.quantity -= item.quantity
-            product.quantityUpdatedAt = ZonedDateTime.now()
-
-            OrderProductEntity(
-                order = order,
-                product = product,
-                quantity = item.quantity,
-                price = product.price
-            )
+        if (products.size != createdOrderProductsMap.size) {
+            val notFoundedProducts = createdOrderProductsMap.keys.subtract(products.map { it.id!! })
+            productNotFoundError(notFoundedProducts.first())
         }
+
+        val orderProducts = products
+            .map { product ->
+                val productId = product.id!!
+                val createdOrderItem = createdOrderProductsMap[productId]
+                    ?: productNotFoundError(productId)
+                product.checkProductUnavailable(createdOrderItem.quantity)
+
+                product.quantity -= createdOrderItem.quantity
+                product.quantityUpdatedAt = ZonedDateTime.now()
+
+                OrderProductEntity(
+                    order = order,
+                    product = product,
+                    quantity = createdOrderItem.quantity,
+                    price = product.price
+                )
+            }
 
         order.orderProducts as MutableList += orderProducts
 
@@ -103,72 +113,76 @@ class OrderServiceImpl(
      * @throws ProductUnavailableException если товара недостаточно или он недоступен.
      * @throws OrderNotFoundException если заказ не найден.
      * @throws OrderUnavailableException если заказ недоступен.
+     * @throws CustomerNotFoundException если заказчик не найден.
+     * @throws CustomerInactiveException если заказчик неактивен.
      */
     @Transactional
-    override fun updateOrder(orderId: UUID, updatedOrder: UpdatedOrder) {
+    override fun updateOrder(customerId: UUID, orderId: UUID, updatedOrder: UpdatedOrder) {
+
+        val customer = customerRepository.findById(customerId).getOrNull()
+            ?: customerNotFoundError(customerId)
+
+        customer.checkCustomerInactive()
+
         val order = orderRepository.findById(orderId)
             .orElseThrow { OrderNotFoundException(orderId) }
 
-        if(order.status != OrderStatus.CREATED) {
+        if (order.status != OrderStatus.CREATED) {
             throw OrderUnavailableException(orderId)
         }
 
         order.deliveryAddress = updatedOrder.deliveryAddress
 
-        val deletingOrderProducts = order.orderProducts.asSequence().map { it.product.id }.toMutableSet()
-        updatedOrder.items.forEach { item ->
-            deletingOrderProducts.remove(item.productId)
-            val product = productRepository.findById(item.productId)
-                .orElseThrow { ProductNotFoundException(item.productId) }
+        val updatingProductItems = updatedOrder.items.associateBy { it.productId }
+        val existedProductsMap = order.orderProducts.associateBy { it.id.productId }
 
+        val (updatedIds, deletedIds) = existedProductsMap.keys
+            .partition { it in updatingProductItems.keys }
+            .let { it.first.toSet() to it.second.toSet() }
 
-            val orderProduct = order.orderProducts.find { it.product.id == item.productId } ?: {
-                val orderProductEntity = OrderProductEntity(
-                    order = order,
-                    product = product,
-                    quantity = item.quantity,
-                    price = product.price
-                )
+        val allUpdatedProductIds = updatingProductItems.keys + deletedIds
+        val products = productRepository.findAllById(allUpdatedProductIds)
 
-                if (!product.isAvailable) {
-                    throw ProductUnavailableException(item.productId, "Товар недоступен для заказа")
-                }
+        products.forEach { product ->
+            val productId = product.id!!
 
-                if (product.quantity < item.quantity) {
-                    throw ProductUnavailableException(item.productId, "Недостаточное количество товара на складе")
-                }
-
-                product.quantity -= item.quantity
-                product.quantityUpdatedAt = ZonedDateTime.now()
-
-                order.orderProducts as MutableList += orderProductEntity
-                orderProductEntity
-            }()
-
-            val quantityDifference = item.quantity.subtract(orderProduct.quantity)
-
-            if (!product.isAvailable) {
-                throw ProductUnavailableException(orderId, "Товар недоступен для заказа")
-            }
-
-            if (quantityDifference > BigDecimal.ZERO && product.quantity < quantityDifference) {
-                throw ProductUnavailableException(orderId, "Недостаточное количество товара на складе")
-            }
-
-            product.quantity = product.quantity.subtract(quantityDifference)
-            product.quantityUpdatedAt = ZonedDateTime.now()
-
-            orderProduct.quantity = item.quantity
-            orderProduct.price = product.price
-        }
-
-        (order.orderProducts as MutableList).removeIf { orderProduct ->
-            (orderProduct.product.id in deletingOrderProducts)
-                .also { isDeleting ->
-                    if(isDeleting) {
-                        orderProduct.product.quantity += orderProduct.quantity
+            when (productId) {
+                in deletedIds -> {
+                    val item = existedProductsMap[productId]
+                    if (item != null) {
+                        product.quantity += item.quantity
+                        product.quantityUpdatedAt = ZonedDateTime.now()
+                        (order.orderProducts as MutableList).remove(item)
                     }
                 }
+
+                in updatedIds -> {
+                    val existingItem = existedProductsMap[productId]
+                    val updatingItem = updatingProductItems[productId]
+                    if (existingItem != null && updatingItem != null) {
+                        val quantityDifference = updatingItem.quantity - existingItem.quantity
+                        product.checkProductUnavailable(quantityDifference)
+
+                        product.quantity -= quantityDifference
+                        product.quantityUpdatedAt = ZonedDateTime.now()
+                        existingItem.quantity = updatingProductItems[productId]!!.quantity
+                        existingItem.price = product.price
+                    }
+                }
+
+                else -> {
+                    val creatingProductItem = OrderProductEntity(
+                        order = order,
+                        product = product,
+                        quantity = updatingProductItems[productId]!!.quantity,
+                        price = product.price
+                    )
+                    (order.orderProducts as MutableList).add(creatingProductItem)
+                    product.checkProductUnavailable(creatingProductItem.quantity)
+                    product.quantity -= creatingProductItem.quantity
+                    product.quantityUpdatedAt = ZonedDateTime.now()
+                }
+            }
         }
 
         orderRepository.save(order)
@@ -188,7 +202,7 @@ class OrderServiceImpl(
         val order = orderRepository.findById(orderId)
             .orElseThrow { OrderNotFoundException(orderId) }
 
-        if(order.status == OrderStatus.CANCELED) {
+        if (order.status == OrderStatus.CANCELED) {
             throw OrderUnavailableException(orderId)
         }
 
@@ -221,13 +235,20 @@ class OrderServiceImpl(
      *
      * @throws OrderNotFoundException если заказ не найден.
      * @throws IllegalOrderStatusException если статус заказа не допускает отмены.
+     * @throws CustomerNotFoundException если заказчик не найден.
+     * @throws CustomerInactiveException если заказчик неактивен.
      */
     @Transactional
-    override fun cancelOrder(orderId: UUID) {
+    override fun cancelOrder(customerId: UUID, orderId: UUID) {
+        val customer = customerRepository.findById(customerId).getOrNull()
+            ?: customerNotFoundError(customerId)
+
+        customer.checkCustomerInactive()
+
         val order = orderRepository.findById(orderId)
             .orElseThrow { OrderNotFoundException(orderId) }
 
-        if (order.status != OrderStatus.CREATED && order.status != OrderStatus.CONFIRMED ) {
+        if (order.status != OrderStatus.CREATED && order.status != OrderStatus.CONFIRMED) {
             throw IllegalOrderStatusException(
                 orderId,
                 order.status,
@@ -261,22 +282,92 @@ class OrderServiceImpl(
      * @throws OrderNotFoundException если заказ не найден.
      * @throws IllegalOrderStatusException если переход между статусами запрещён.
      */
+    @Suppress("UseCheckOrError")
     @Transactional
     override fun updateOrderStatus(orderId: UUID, newStatus: OrderStatus) {
-        val order = orderRepository.findById(orderId)
-            .orElseThrow { OrderNotFoundException(orderId) }
+        val currentStatus = orderRepository.findStatusById(orderId)
+            ?: throw OrderNotFoundException(orderId)
 
-        if (!isStatusTransitionAllowed(order.status, newStatus)) {
+        if (!isStatusTransitionAllowed(currentStatus, newStatus)) {
             throw IllegalOrderStatusException(
                 orderId,
-                order.status,
+                currentStatus,
                 "Переход в статус $newStatus запрещён"
             )
         }
 
-        order.status = newStatus
-        orderRepository.save(order)
+        val updatedRows = orderRepository.updateOrderStatus(orderId, newStatus)
+        if (updatedRows == 0) {
+            throw IllegalStateException("Не удалось обновить статус заказа $orderId")
+        }
     }
+
+    /**
+     * Возвращает отчет по продуктам и заказам с этими продуктами.
+     *
+     * @return Отчет о продуктах и заказах([ProductOrderReportInfo]).
+     */
+    override fun getProductOrderReport(): Map<UUID, List<ProductOrderReportInfo>> {
+        val statuses = setOf(OrderStatus.CREATED, OrderStatus.CONFIRMED)
+        val orders = orderRepository.findAllWithProductsByStatuses(statuses)
+        val logins = orders.asSequence().map { it.customer }.distinctBy { it.id }.map { it.login }.toSet()
+
+        val innFuture = CompletableFuture
+            .supplyAsync { customerDataService.getInns(logins) }
+            .exceptionally { ex ->
+                productOrderReportError("Ошибка при получении ИНН: ${ex.message}", ex)
+            }
+        val accFuture = CompletableFuture
+            .supplyAsync { customerDataService.getAccountNumbers(logins) }
+            .exceptionally { ex ->
+                productOrderReportError("Ошибка при получении номера счета: ${ex.message}", ex)
+            }
+
+        return buildProductOrderReport(orders, innFuture.join(), accFuture.join())
+    }
+
+    /**
+     * Метод сборки отчета по продуктам и заказам с этими продуктами
+     *
+     * @param orders Все заказы
+     * @param innMap Набор инн по всем заказчикам
+     * @param accMap Набор номеров счетов по всем заказчикам
+     * @return Сгруппированный по продуктам отчет по заказам
+     */
+    private fun buildProductOrderReport(
+        orders: List<OrderEntity>,
+        innMap: Map<String, String>,
+        accMap: Map<String, String>
+    ): Map<UUID, List<ProductOrderReportInfo>> = orders.asSequence()
+        .flatMap { order ->
+            order.orderProducts
+                .mapNotNull { product ->
+                    val orderId = order.id
+                    val customerId = order.customer.id
+                    if (orderId != null && customerId != null) {
+                        val report = ProductOrderReportInfo(
+                            orderId = orderId,
+                            customer = CustomerReportInfo(
+                                id = customerId,
+                                login = order.customer.login,
+                                email = order.customer.email,
+                                inn = innMap.getValue(order.customer.login),
+                                accountNumber = accMap.getValue(order.customer.login),
+                            ),
+                            status = order.status,
+                            deliveryAddress = order.deliveryAddress,
+                            quantity = product.quantity,
+                        )
+                        report to product.id.productId
+                    } else {
+                        null
+                    }
+                }
+        }
+        .groupBy(
+            keySelector = { it.second }, // productId
+            valueTransform = { it.first } // ProductOrderReportInfo
+        )
 
     /**
      * Проверяет допустимость перехода из текущего статуса в новый.

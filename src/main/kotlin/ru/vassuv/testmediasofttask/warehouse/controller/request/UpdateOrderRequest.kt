@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Positive
 import ru.vassuv.testmediasofttask.warehouse.controller.OrderController
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.OrderEntity
 import java.math.BigDecimal
@@ -37,5 +38,6 @@ data class UpdateOrderItemRequest(
     /** Количество товара в заказе. Обязательное поле. */
     @field:NotNull(message = "Количество товара должно быть указано")
     @field:Schema(description = "Количество товара", example = "2")
+    @field:Positive(message = "Количество товара должно быть больше 0")
     val quantity: BigDecimal
 )

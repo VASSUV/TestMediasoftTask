@@ -11,6 +11,8 @@ import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateProductReq
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductExistsWithArticleException
 import ru.vassuv.testmediasofttask.warehouse.exception.handler.GlobalExceptionHandler
 import ru.vassuv.testmediasofttask.warehouse.mock.createProductRequestMock
+import ru.vassuv.testmediasofttask.warehouse.service.CurrencyConversionService
+import ru.vassuv.testmediasofttask.warehouse.service.CurrencyProviderService
 import ru.vassuv.testmediasofttask.warehouse.service.ProductService
 import java.util.*
 import kotlin.test.Test
@@ -20,7 +22,10 @@ import kotlin.test.Test
  */
 class ProductControllerTest {
     private val productServiceMock = mockk<ProductService>()
-    private val mockMvc: MockMvc = MockMvcBuilders.standaloneSetup(ProductControllerImpl(productServiceMock))
+    private val currencyServiceMock = mockk<CurrencyConversionService>()
+    private val mockMvc: MockMvc = MockMvcBuilders.standaloneSetup(
+        ProductControllerImpl(productServiceMock, currencyServiceMock)
+    )
         .setControllerAdvice(GlobalExceptionHandler()).build()
 
 

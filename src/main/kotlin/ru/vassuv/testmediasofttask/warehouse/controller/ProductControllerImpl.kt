@@ -53,7 +53,8 @@ class ProductControllerImpl(
      * Возвращает список товаров с пагинацией.
      *
      * @param pageable параметры пагинации и сортировки.
-     * @return страница объектов [ProductResponse], цены которых конвертированы в текущую валюту сессии ([CurrencyType]).
+     * @return страница объектов [ProductResponse],
+     * цены которых конвертированы в текущую валюту сессии ([CurrencyType]).
      */
     @GetMapping
     override fun getProducts(pageable: Pageable) =

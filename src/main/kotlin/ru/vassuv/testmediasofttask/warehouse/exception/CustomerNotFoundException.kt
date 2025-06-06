@@ -14,3 +14,10 @@ import java.util.UUID
 class CustomerNotFoundException(
     val customerId: UUID
 ) : RuntimeException("Пользователь с id=$customerId не найден")
+
+/**
+ * Метод вызывающий исключение CustomerNotFoundException
+ *
+ * @property customerId UUID пользователя, вызвавшего ошибку
+ */
+fun customerNotFoundError(customerId: UUID): Nothing = throw CustomerNotFoundException(customerId)

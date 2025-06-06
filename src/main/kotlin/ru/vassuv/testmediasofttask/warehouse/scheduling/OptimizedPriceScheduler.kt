@@ -75,6 +75,7 @@ open class OptimizedPriceScheduler(
      * @param logFile Буферизированный поток записи в файл.
      * @param exportFilePath Путь к файлу экспорта данных.
      */
+    @Suppress("TooGenericExceptionCaught")
     private fun updatePricesAndWriteToFile(
         connection: Connection,
         batchSize: Int,
@@ -85,7 +86,8 @@ open class OptimizedPriceScheduler(
     ) {
         connection.prepareStatement("UPDATE products SET price = ? WHERE id = ?").use { updateStatement ->
             try {
-                var batchCounter = batchSize // TODO возможно следуюет выбирать batch size динамически, из размера таблицы
+                var batchCounter = batchSize
+                // TODO возможно следуюет выбирать batch size динамически, из размера таблицы
                 var batchNumber = 0
 
                 while (resultSet.next()) {
@@ -106,7 +108,8 @@ open class OptimizedPriceScheduler(
                     batchCounter--
                     if (batchCounter == 0) {
                         batchCounter = batchSize
-                        updateStatement.executeBatch() // TODO можно обработать результат, и понять запись в которой была ошибка
+                        updateStatement.executeBatch()
+                        // TODO можно обработать результат, и понять запись в которой была ошибка
                         log.info("Успешно записан батч ($batchNumber) из $batchSize продуктов в файл $exportFilePath")
                         batchNumber++
                     }
@@ -115,7 +118,9 @@ open class OptimizedPriceScheduler(
                 updateStatement.executeBatch() // TODO можно обработать результат, и понять запись в которой была ошибка
                 val currentBatchSize = batchSize - batchCounter
                 if (currentBatchSize != 0) {
-                    log.info("Успешно записан батч ($batchNumber) из $currentBatchSize продуктов в файл $exportFilePath")
+                    log.info(
+                        "Успешно записан батч ($batchNumber) из $currentBatchSize продуктов в файл $exportFilePath"
+                    )
                 }
                 connection.commit()
                 logFile.flush()

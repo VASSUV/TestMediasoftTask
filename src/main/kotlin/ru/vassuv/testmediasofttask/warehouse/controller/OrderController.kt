@@ -3,10 +3,12 @@ package ru.vassuv.testmediasofttask.warehouse.controller
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateOrderRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderStatusRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.response.OrderResponse
+import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductOrderReportInfoResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
 import ru.vassuv.testmediasofttask.warehouse.enums.OrderStatus
 import ru.vassuv.testmediasofttask.warehouse.exception.CustomerInactiveException
@@ -57,6 +59,7 @@ interface OrderController {
      *
      * Товары перераспределяются с учётом новых данных, обновляется резерв на складе.
      *
+     * @param customerId идентификатор заказчика, передаётся в заголовке запроса.
      * @param orderId идентификатор заказа.
      * @param request обновлённые позиции заказа ([UpdateOrderRequest]).
      * @return HTTP-ответ со статусом NO_CONTENT.
@@ -70,7 +73,7 @@ interface OrderController {
         summary = "Обновление заказа",
         description = "Обновляет позиции заказа с проверкой наличия товара и корректности статуса."
     )
-    fun updateOrder(orderId: UUID, request: UpdateOrderRequest): ResponseEntity<Void>
+    fun updateOrder(customerId: UUID, orderId: UUID, request: UpdateOrderRequest): ResponseEntity<Void>
 
     /**
      * Возвращает информацию о заказе по идентификатору.
@@ -92,6 +95,7 @@ interface OrderController {
      *
      * Меняет статус заказа на [OrderStatus.CANCELED].
      *
+     * @param customerId идентификатор заказчика, передаётся в заголовке запроса.
      * @param orderId идентификатор заказа для отмены.
      * @return HTTP-ответ со статусом NO_CONTENT.
      *
@@ -102,7 +106,7 @@ interface OrderController {
         summary = "Отмена заказа",
         description = "Отменяет заказ и возвращает зарезервированные товары обратно на склад."
     )
-    fun cancelOrder(orderId: UUID): ResponseEntity<Void>
+    fun cancelOrder(customerId: UUID, orderId: UUID): ResponseEntity<Void>
 
     /**
      * Подтверждение заказа (реализация будет позже).
@@ -131,4 +135,16 @@ interface OrderController {
         description = "Изменяет статус заказа на указанный, с соблюдением правил перехода состояний."
     )
     fun updateOrderStatus(orderId: UUID, request: UpdateOrderStatusRequest): ResponseEntity<Void>
+
+    /**
+     * Возвращает отчет по продуктам и заказам с этими продуктами.
+     *
+     * @return Сформированный отчет по продуктам и заказам.
+     */
+    @Operation(
+        summary = "Формирование отчета по продуктам и заказам с этими продуктами",
+        description = "Формирует отчет по продуктам и заказам с этими продуктами"
+    )
+    @GetMapping("/api/report/product-orders")
+    fun getProductOrderReport(): Map<UUID, List<ProductOrderReportInfoResponse>>
 }
