@@ -1,0 +1,7 @@
+kafka:
+  image: confluentinc/cp-kafka:7.9.1
+  storageSize: 1Gi
+  clusterId: "6345ABF7-73E9-4465-A61D-8411DA125CF3"  # или .Values.kafka.clusterId
+  logDir: /var/lib/kafka/data
+  labels:
+    app: kafka

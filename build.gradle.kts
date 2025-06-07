@@ -34,6 +34,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.boot:spring-boot-starter-cache")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+	implementation("org.springframework.kafka:spring-kafka")
 	implementation("com.github.ben-manes.caffeine:caffeine")
 	runtimeOnly("com.h2database:h2")
 

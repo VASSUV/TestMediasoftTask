@@ -62,6 +62,10 @@
    helm install warehouse ./deployment/helm/ --namespace warehouse-ns --create-namespace
 ```
 
+```bash # Установка чарта в namespace warehouse-ns
+   helm install kafka-kraft ./deployment/kafka/
+```
+
 Если чарт уже установлен:
 
 ```bash
@@ -166,6 +170,10 @@ http://localhost/
 ```bash
    helm uninstall warehouse -n warehouse-ns
    kubectl delete namespace warehouse-ns
+```
+
+```bash
+   helm uninstall kafka-kraft
 ```
 
 ---

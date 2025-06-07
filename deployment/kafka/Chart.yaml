@@ -1,0 +1,14 @@
+apiVersion: v2
+name: kafka-kraft
+version: 1.0.0
+description: Lightweight Kafka deployment using KRaft mode (no ZooKeeper)
+type: application
+
+appVersion: 3.5.0
+
+sources:
+  - https://kafka.apache.org
+
+maintainers:
+  - name: Vasiliy
+    email: vassuv@ya.ru

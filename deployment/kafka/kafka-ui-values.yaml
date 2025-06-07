@@ -1,0 +1,8 @@
+env:
+  - name: KAFKA_CLUSTERS_0_NAME
+    value: "local"
+  - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
+    value: "kafka-kraft-kafka:9092"
+
+service:
+  type: NodePort
