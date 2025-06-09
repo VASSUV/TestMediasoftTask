@@ -1,6 +1,5 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
-import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.vassuv.testmediasofttask.warehouse.enums.OrderStatus
@@ -21,6 +20,8 @@ import ru.vassuv.testmediasofttask.warehouse.persist.entity.OrderProductEntity
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.CustomerRepository
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.OrderRepository
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.ProductRepository
+import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaEvent
+import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaTopic
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedOrder
 import ru.vassuv.testmediasofttask.warehouse.service.model.CustomerReportInfo
 import ru.vassuv.testmediasofttask.warehouse.service.model.OrderData
@@ -30,7 +31,6 @@ import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedOrder
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ForkJoinPool
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -43,7 +43,8 @@ class OrderServiceImpl(
     private val customerRepository: CustomerRepository,
     private val productRepository: ProductRepository,
     private val orderRepository: OrderRepository,
-    private val customerDataService: CustomerDataService
+    private val customerDataService: CustomerDataService,
+    private val kafkaProducerService: KafkaProducerService
 ) : OrderService {
 
     /**
@@ -99,6 +100,21 @@ class OrderServiceImpl(
         order.orderProducts as MutableList += orderProducts
 
         orderRepository.save(order)
+
+        kafkaProducerService.sendEvent(
+            topic = KafkaTopic.WAREHOUSE,
+            event = KafkaEvent.Order.Create(
+                customerId = customerId,
+                deliveryAddress = order.deliveryAddress,
+                products = order.orderProducts.map {
+                    KafkaEvent.Order.Create.Product(
+                        id = it.id.productId,
+                        quantity = it.quantity
+                    )
+                }
+            ),
+            key = "create order ${order.id!!}"
+        )
 
         return order.id!!
     }
@@ -185,6 +201,21 @@ class OrderServiceImpl(
             }
         }
 
+        kafkaProducerService.sendEvent(
+            topic = KafkaTopic.WAREHOUSE,
+            event = KafkaEvent.Order.Update(
+                orderId = orderId,
+                customerId = customerId,
+                products = order.orderProducts.map {
+                    KafkaEvent.Order.Update.Product(
+                        id = it.id.productId,
+                        quantity = it.quantity
+                    )
+                }
+            ),
+            key = "update order ${order.id!!}"
+        )
+
         orderRepository.save(order)
     }
 
@@ -264,6 +295,15 @@ class OrderServiceImpl(
             product.quantityUpdatedAt = ZonedDateTime.now()
         }
 
+        kafkaProducerService.sendEvent(
+            topic = KafkaTopic.WAREHOUSE,
+            event = KafkaEvent.Order.Delete(
+                orderId = orderId,
+                customerId = customerId,
+            ),
+            key = "cancel order ${order.id!!}"
+        )
+
         orderRepository.save(order)
     }
 
@@ -300,6 +340,15 @@ class OrderServiceImpl(
         if (updatedRows == 0) {
             throw IllegalStateException("Не удалось обновить статус заказа $orderId")
         }
+
+        kafkaProducerService.sendEvent(
+            topic = KafkaTopic.WAREHOUSE,
+            event = KafkaEvent.Order.UpdateStatus(
+                orderId = orderId,
+                status = newStatus,
+            ),
+            key = "change order status $orderId"
+        )
     }
 
     /**

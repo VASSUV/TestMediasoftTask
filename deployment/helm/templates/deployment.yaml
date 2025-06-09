@@ -5,9 +5,6 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app: {{ .Values.appName }}
-{{/*  annotations:*/}}
-{{/*    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}*/}}
-{{/*    checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}*/}}
 spec:
 #  strategy:
 #    type: RollingUpdate #еще есть Recreate
@@ -25,17 +22,13 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-#            - containerPort: 80
             - containerPort: 8080
               name: app
             - containerPort: 9090
               name: actuator
-
-
-{{/*          env:*/}}
-{{/*            - name: SPRING_PROFILES_ACTIVE*/}}
-{{/*              value: "local"*/}}
           env:
+            - name: KAFKA_BOOTSTRAP_SERVER
+              value: kafka-0.kafka-kraft-kafka.default.svc.cluster.local:9092
             - name: INN_SERVICE_HOST
               value: {{ .Values.config.innServiceHost }}
             - name: ACCOUNT_NUMBER_SERVICE_HOST

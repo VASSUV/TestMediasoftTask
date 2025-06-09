@@ -1,7 +1,7 @@
 namespace: warehouse-ns
 appName: warehouse
 
-replicaCount: 3
+replicaCount: 2
 
 secret:
   name: warehouse-secret
@@ -13,13 +13,14 @@ deployment:
 
 image:
   repository: warehouse-app
-  tag: v3
+  tag: v32
   pullPolicy: IfNotPresent
 
 config:
   innServiceHost: http://inn-inn-service.inn-ns.svc.cluster.local:8083
   accountNumberServiceHost: http://account-number-account-number-service.account-number-ns.svc.cluster.local:8084
   currencyServiceHost: http://currency-currency-service.currency-ns.svc.cluster.local:8082
+  kafkaServiceHost: kafka-kraft-kafka.default.svc.cluster.local:9092
 
 service:
   type: LoadBalancer
