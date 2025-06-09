@@ -51,7 +51,7 @@
      minikube -p minikube docker-env --shell=powershell | Invoke-Expression
 ```
 ```bash
-    docker build -t warehouse-app:v3 .
+    docker build -t warehouse-app:v17 .
 ```
 
 ---
@@ -65,6 +65,13 @@
 ```bash # Установка чарта в namespace warehouse-ns
    helm install kafka-kraft ./deployment/kafka/
 ```
+```bash # Установка kafkaUi
+   helm install kafka-ui kafka-ui/kafka-ui -f ./deployment/kafka/kafka-ui-values.yaml
+```
+```bash # Запуск KafkaUi
+   minikube service kafka-ui  
+```
+
 
 Если чарт уже установлен:
 
@@ -174,6 +181,7 @@ http://localhost/
 
 ```bash
    helm uninstall kafka-kraft
+   helm uninstall kafka-ui
 ```
 
 ---
@@ -181,8 +189,10 @@ http://localhost/
 ## 🧪 8. Отладка
 
 ```bash
-   kubectl describe pod warehouse-warehouse-app-8cfdb784f-zqzpp  -n warehouse-ns
-   kubectl logs <pod-name> -n warehouse-ns
+   kubectl describe pod warehouse-warehouse-app-8c788cdb9-2mnh7 -n warehouse-ns
+```
+```bash
+   kubectl logs warehouse-warehouse-app-79c97c5c4-g8khr -n warehouse-ns
 ```
 
 ---
@@ -191,4 +201,31 @@ http://localhost/
 
 ```bash
    
+```
+
+## 10. скрипты
+
+
+```bash
+   helm uninstall warehouse -n warehouse-ns
+   kubectl delete namespace warehouse-ns
+   
+```
+```bash
+   ./gradlew build -x test
+```
+```bash
+   eval $(minikube docker-env)
+   docker build -t warehouse-app:v32 .
+   
+   helm install warehouse ./deployment/helm/ --namespace warehouse-ns --create-namespace
+
+   kubectl get pods -n warehouse-ns
+```
+```bash лог второго пода в namespace
+   kubectl logs -f $(kubectl get pods -n warehouse-ns --no-headers | sed -n '2p' | awk '{print $1}') -n warehouse-ns
+```
+
+```bash лог третьего пода в namespace
+   kubectl logs -f $(kubectl get pods -n warehouse-ns --no-headers | sed -n '3p' | awk '{print $1}') -n warehouse-ns
 ```

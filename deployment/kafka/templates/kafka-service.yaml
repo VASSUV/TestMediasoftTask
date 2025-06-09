@@ -13,4 +13,4 @@ spec:
     - name: broker
       port: 9092
     - name: controller
-      port: 9093
+      port: 29092

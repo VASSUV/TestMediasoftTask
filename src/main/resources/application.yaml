@@ -39,6 +39,15 @@ spring:
     caffeine:
       spec: expireAfterWrite=60s
 
+  kafka:
+    listener:
+      ack-mode: manual
+    bootstrap-servers:
+      - ${KAFKA_BOOTSTRAP_SERVER}
+    consumer:
+      group-id: test-consumer-group-1
+      auto-offset-reset: earliest
+
 app:
   scheduling:
     enabled: false
@@ -79,7 +88,9 @@ rest:
     host:  ${CURRENCY_SERVICE_HOST:http://currency-service}
     methods:
       currencies: /api/currencies
-
+#logging:
+#  level:
+#    org.springframework.kafka.listener: DEBUG
 ---
 
 spring:

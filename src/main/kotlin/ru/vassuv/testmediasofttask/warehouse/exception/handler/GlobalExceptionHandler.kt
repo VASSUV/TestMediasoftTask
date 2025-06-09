@@ -51,7 +51,13 @@ class GlobalExceptionHandler {
         val statusCode = annotationStatus.value()
         val statusName = annotationStatus.name
         val classPath = ex.classPath
-        val apiError = ApiError(statusCode, statusName, ex.localizedMessage, classPath)
+        val apiError = ApiError(
+            statusCode,
+            statusName,
+            ex.localizedMessage,
+            classPath,
+            originalMessage = ex.cause.toString()
+        )
             .also { log.apiError(it) }
 
         return ResponseEntity (apiError, annotationStatus)
@@ -163,7 +169,7 @@ class GlobalExceptionHandler {
      * @param error логируемая ошибка
      */
     private fun Logger.apiError(error: ApiError) {
-        error("Unexpected exception at [{}]: {}", error.classPath, error.message)
+        error("Unexpected exception at [{}]: {}, {}", error.classPath, error.message, error.originalMessage)
     }
 
     /**
