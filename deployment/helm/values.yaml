@@ -13,7 +13,7 @@ deployment:
 
 image:
   repository: warehouse-app
-  tag: v51
+  tag: v52
   pullPolicy: IfNotPresent
 
 config:

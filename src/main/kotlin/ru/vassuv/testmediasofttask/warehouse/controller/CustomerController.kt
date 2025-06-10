@@ -1,6 +1,7 @@
 package ru.vassuv.testmediasofttask.warehouse.controller
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateCustomerRequest
@@ -12,6 +13,7 @@ import ru.vassuv.testmediasofttask.warehouse.controller.response.CustomerCreated
  * Предоставляет API-методы для создания новых заказчиков
  * и дальнейшего управления ими.
  */
+@SecurityRequirement(name = "BearerAuth")
 @Tag(
     name = "Customers",
     description = "Управление заказчиками"

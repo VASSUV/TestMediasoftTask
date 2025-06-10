@@ -1,6 +1,7 @@
 package ru.vassuv.testmediasofttask.warehouse.controller
 
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.tags.Tag
 import jakarta.validation.ValidationException
 import org.springframework.data.domain.Page
@@ -23,6 +24,7 @@ import java.util.*
  * Предоставляет операции для создания, чтения, обновления и удаления (CRUD),
  * а также различные виды поиска и фильтрации товаров на складе.
  */
+@SecurityRequirement(name = "BearerAuth")
 @Tag(
     name = "Products",
     description = "Управление товарами на складе"
