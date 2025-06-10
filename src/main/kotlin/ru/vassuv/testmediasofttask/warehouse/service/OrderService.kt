@@ -1,5 +1,6 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
+import ru.vassuv.testmediasofttask.warehouse.config.security.WarehousePrincipal
 import ru.vassuv.testmediasofttask.warehouse.enums.OrderStatus
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedOrder
 import ru.vassuv.testmediasofttask.warehouse.service.model.OrderData
@@ -17,19 +18,20 @@ interface OrderService {
     /**
      * Создаёт заказ для указанного заказчика.
      *
-     * @param customerId идентификатор заказчика.
+     * @param customerProfileId Идентификатор профиля заказчика
      * @param createdOrder данные создаваемого заказа ([CreatedOrder]).
      * @return идентификатор созданного заказа.
      */
-    fun createOrder(customerId: UUID, createdOrder: CreatedOrder): UUID
+    fun createOrder(customerProfileId: UUID, createdOrder: CreatedOrder): UUID
 
     /**
      * Обновляет существующий заказ.
      *
+     * @param customerProfileId Идентификатор профиля заказчика
      * @param orderId идентификатор заказа.
      * @param updatedOrder обновлённые данные заказа ([UpdatedOrder]).
      */
-    fun updateOrder(customerId: UUID, orderId: UUID, updatedOrder: UpdatedOrder)
+    fun updateOrder(customerProfileId: UUID, orderId: UUID, updatedOrder: UpdatedOrder)
 
     /**
      * Возвращает данные заказа по его идентификатору.
@@ -42,9 +44,10 @@ interface OrderService {
     /**
      * Отменяет заказ.
      *
+     * @param customerProfileId Идентификатор профиля заказчика
      * @param orderId идентификатор заказа.
      */
-    fun cancelOrder(customerId: UUID, orderId: UUID)
+    fun cancelOrder(customerProfileId: UUID, orderId: UUID)
 
     /**
      * Обновляет статус заказа.

@@ -3,15 +3,17 @@ package ru.vassuv.testmediasofttask.warehouse.controller
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import ru.vassuv.testmediasofttask.warehouse.config.security.WarehousePrincipal
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toCreatedOrder
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toOrderResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toProductOrderReportInfoResponse
@@ -31,7 +33,10 @@ import ru.vassuv.testmediasofttask.warehouse.exception.OrderUnavailableException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductUnavailableException
 import ru.vassuv.testmediasofttask.warehouse.service.OrderService
-import ru.vassuv.testmediasofttask.warehouse.service.model.ProductOrderReportInfo
+import ru.vassuv.testmediasofttask.warehouse.support.Consts.SecurityRoleRules.ROLES_ALL
+import ru.vassuv.testmediasofttask.warehouse.support.Consts.SecurityRoleRules.ROLE_MANAGER
+import ru.vassuv.testmediasofttask.warehouse.support.Consts.SecurityRoleRules.ROLE_USER
+import ru.vassuv.testmediasofttask.warehouse.support.Consts.SecurityRoleRules.SERVICE_AUTHORITY
 import java.util.*
 
 /**
@@ -51,7 +56,7 @@ class OrderControllerImpl(
      *
      * Товары резервируются со склада, уменьшая доступное количество.
      *
-     * @param customerId идентификатор заказчика, передаётся в заголовке запроса.
+     * @param principal параметры из аутентификации ([WarehousePrincipal]).
      * @param request данные нового заказа ([CreateOrderRequest]).
      * @return Ответ с идентификатором заказа ([UuidResponse]) и статусом CREATED.
      *
@@ -60,12 +65,16 @@ class OrderControllerImpl(
      * @throws CustomerNotFoundException если заказчик не найден.
      * @throws CustomerInactiveException если заказчик неактивен.
      */
+    @PreAuthorize(ROLE_USER)
     @PostMapping
     override fun createOrder(
-        @RequestHeader("customerId") customerId: UUID,
-        @Valid @RequestBody request: CreateOrderRequest
+        @AuthenticationPrincipal principal: WarehousePrincipal,
+        @Valid @RequestBody request: CreateOrderRequest,
     ): ResponseEntity<UuidResponse> {
-        val orderId = orderService.createOrder(customerId, request.toCreatedOrder())
+        val orderId = orderService.createOrder(
+            customerProfileId = principal.getUserProfileIdOrError(),
+            createdOrder = request.toCreatedOrder()
+        )
         return ResponseEntity.status(HttpStatus.CREATED).body(UuidResponse(orderId))
     }
 
@@ -74,7 +83,7 @@ class OrderControllerImpl(
      *
      * Перераспределяет товары с учётом новых данных и резервирует их на складе.
      *
-     * @param customerId идентификатор заказчика, передаётся в заголовке запроса.
+     * @param principal параметры из аутентификации ([WarehousePrincipal]).
      * @param orderId идентификатор заказа.
      * @param request новые данные для обновления ([UpdateOrderRequest]).
      * @return HTTP-ответ со статусом NO_CONTENT.
@@ -86,13 +95,18 @@ class OrderControllerImpl(
      * @throws CustomerNotFoundException если заказчик не найден.
      * @throws CustomerInactiveException если заказчик неактивен.
      */
+    @PreAuthorize(ROLE_USER)
     @PatchMapping("/{orderId}")
     override fun updateOrder(
-        @RequestHeader("customerId") customerId: UUID,
+        @AuthenticationPrincipal principal: WarehousePrincipal,
         @PathVariable orderId: UUID,
         @Valid @RequestBody request: UpdateOrderRequest
     ): ResponseEntity<Void> {
-        orderService.updateOrder(customerId, orderId, request.toUpdatedOrder())
+        orderService.updateOrder(
+            customerProfileId = principal.getUserProfileIdOrError(),
+            orderId = orderId,
+            updatedOrder = request.toUpdatedOrder()
+        )
         return ResponseEntity.noContent().build()
     }
 
@@ -105,6 +119,7 @@ class OrderControllerImpl(
      * @throws OrderNotFoundException если заказ не найден.
      * @throws OrderUnavailableException если заказ недоступен.
      */
+    @PreAuthorize(ROLES_ALL)
     @GetMapping("/{orderId}")
     override fun getOrder(@PathVariable orderId: UUID): ResponseEntity<OrderResponse> {
         val order = orderService.getOrderById(orderId).toOrderResponse()
@@ -116,7 +131,7 @@ class OrderControllerImpl(
      *
      * Меняет статус заказа на [OrderStatus.CANCELED].
      *
-     * @param customerId идентификатор заказчика, передаётся в заголовке запроса.
+     * @param principal параметры из аутентификации ([WarehousePrincipal]).
      * @param orderId идентификатор заказа.
      * @return HTTP-ответ со статусом NO_CONTENT.
      *
@@ -125,12 +140,16 @@ class OrderControllerImpl(
      * @throws CustomerNotFoundException если заказчик не найден.
      * @throws CustomerInactiveException если заказчик неактивен.
      */
+    @PreAuthorize(ROLE_USER)
     @DeleteMapping("/{orderId}")
     override fun cancelOrder(
-        @RequestHeader("customerId") customerId: UUID,
+        @AuthenticationPrincipal principal: WarehousePrincipal,
         @PathVariable orderId: UUID
     ): ResponseEntity<Void> {
-        orderService.cancelOrder(customerId, orderId)
+        orderService.cancelOrder(
+            customerProfileId = principal.getUserProfileIdOrError(),
+            orderId = orderId
+        )
         return ResponseEntity.noContent().build()
     }
 
@@ -140,6 +159,7 @@ class OrderControllerImpl(
      * @param orderId идентификатор заказа.
      * @return HTTP-ответ со статусом NOT_IMPLEMENTED.
      */
+    @PreAuthorize(ROLE_MANAGER)
     @Suppress("ForbiddenComment")
     @PostMapping("/{orderId}/confirm")
     override fun confirmOrder(@PathVariable orderId: UUID): ResponseEntity<Void> {
@@ -159,6 +179,7 @@ class OrderControllerImpl(
      * @throws OrderNotFoundException если заказ не найден.
      * @throws IllegalOrderStatusException если статус не может быть изменён.
      */
+    @PreAuthorize(SERVICE_AUTHORITY)
     @PatchMapping("/{orderId}/status")
     override fun updateOrderStatus(
         @PathVariable orderId: UUID,
@@ -173,8 +194,9 @@ class OrderControllerImpl(
      *
      * @return Сформированный отчет по продуктам и заказам.
      */
+    @PreAuthorize("$ROLE_MANAGER || $SERVICE_AUTHORITY")
     @GetMapping("/report/product-orders")
-    override fun getProductOrderReport(): Map<UUID, List<ProductOrderReportInfoResponse>>{
+    override fun getProductOrderReport(): Map<UUID, List<ProductOrderReportInfoResponse>> {
         return orderService.getProductOrderReport().mapValues { (_, reports) ->
             reports.map { it.toProductOrderReportInfoResponse() }
         }

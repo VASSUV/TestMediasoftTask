@@ -36,6 +36,8 @@ dependencies {
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.springframework.kafka:spring-kafka")
 	implementation("com.github.ben-manes.caffeine:caffeine")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	runtimeOnly("com.h2database:h2")
 
 	runtimeOnly("org.postgresql:postgresql")

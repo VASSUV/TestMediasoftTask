@@ -1,4 +1,4 @@
-package ru.vassuv.testmediasofttask.warehouse.interaction
+package ru.vassuv.testmediasofttask.warehouse.interaction.rest
 
 import kotlinx.coroutines.runBlocking
 import org.springframework.http.MediaType
@@ -11,40 +11,40 @@ import ru.vassuv.testmediasofttask.warehouse.service.model.Inns
 import ru.vassuv.testmediasofttask.warehouse.service.model.Logins
 
 /**
- * Интерфейс клиента для получения информации об инн заказчиков
+ * Интерфейс клиента для получения информации о номерах счетов заказчиков
  */
-interface InnServiceClient {
+interface AccountNumberServiceClient {
 
     /**
-     * Асинхронно получает информацию об инн заказчиков
+     * Асинхронно получает информацию о номерах счетов заказчиков
      *
      * @param logins [Logins] список логинов
-     * @return [Inns] Список инн с их логинами
+     * @return [Inns] Список номеров счетов с их логинами
      */
-    fun getByLogins(logins: Logins): Inns
+    fun getByLogins(logins: Logins): AccountNumbers
 }
 
 /**
- * Интерфейс клиента для получения информации об инн заказчиков
+ * Интерфейс клиента для получения информации о номерах счетов заказчиков
  */
 @Component
-class InnServiceClientImpl(
+class AccountNumberServiceClientImpl(
     webClientBuilder: WebClient.Builder,
     private val restServiceProperties: RestServiceProperties
-) : InnServiceClient {
+) : AccountNumberServiceClient {
 
-    private val client = webClientBuilder.baseUrl(restServiceProperties.inn.host).build()
+    private val client = webClientBuilder.baseUrl(restServiceProperties.accountNumber.host).build()
 
     /**
-     * Асинхронно получает информацию об инн заказчиков
+     * Асинхронно получает информацию о номерах счетов заказчиков
      *
      * @param logins [Logins] список логинов
-     * @return [Inns] Список инн с их логинами
+     * @return [Inns] Список номеров счетов с их логинами
      */
     override fun getByLogins(logins: Logins): AccountNumbers {
         return runBlocking {
             client.post()
-                .uri(restServiceProperties.inn.methods.inns)
+                .uri(restServiceProperties.accountNumber.methods.accountNumbers)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(logins)
                 .retrieve()

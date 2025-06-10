@@ -3,6 +3,7 @@ package ru.vassuv.testmediasofttask.warehouse.controller.request
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank
+import org.hibernate.validator.constraints.UUID
 import ru.vassuv.testmediasofttask.warehouse.controller.CustomerController
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.CustomerEntity
 
@@ -22,6 +23,12 @@ data class CreateCustomerRequest(
     @field:Email(message = "Email должен быть корректным")
     @field:Schema(description = "Email заказчика", example = "john@example.com")
     val email: String,
+
+    /** Уникальный идентификатор профиля заказчика */
+    @field:NotBlank(message = "ProfileId обязателен")
+    @field:UUID (message = "ProfileId должен быть корректным")
+    @field:Schema(description = "Идентификатор профиля заказчика", example = "e99f52b0-a318-4e95-9eb4-26e8d93058a1")
+    val profileId: String,
 
     /** Флаг активности заказчика. По умолчанию true. */
     @field:Schema(description = "Активен ли заказчик", example = "true", defaultValue = "true")

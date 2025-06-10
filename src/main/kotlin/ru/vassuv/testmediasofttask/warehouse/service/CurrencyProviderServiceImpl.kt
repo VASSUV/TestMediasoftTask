@@ -2,10 +2,9 @@ package ru.vassuv.testmediasofttask.warehouse.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Service
 import ru.vassuv.testmediasofttask.warehouse.interaction.CurrencyClient
-import ru.vassuv.testmediasofttask.warehouse.interaction.model.ExchangesCurrency
+import ru.vassuv.testmediasofttask.warehouse.interaction.rest.model.ExchangesCurrency
 
 /**
  * Реализация сервиса получения актуальных курсов валют ([CurrencyProviderService]).

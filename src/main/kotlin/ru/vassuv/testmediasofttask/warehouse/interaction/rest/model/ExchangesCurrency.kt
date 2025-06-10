@@ -1,4 +1,4 @@
-package ru.vassuv.testmediasofttask.warehouse.interaction.model
+package ru.vassuv.testmediasofttask.warehouse.interaction.rest.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.math.BigDecimal

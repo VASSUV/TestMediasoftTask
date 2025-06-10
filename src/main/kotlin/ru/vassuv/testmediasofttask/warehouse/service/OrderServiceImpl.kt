@@ -15,13 +15,14 @@ import ru.vassuv.testmediasofttask.warehouse.exception.checkProductUnavailable
 import ru.vassuv.testmediasofttask.warehouse.exception.customerNotFoundError
 import ru.vassuv.testmediasofttask.warehouse.exception.productNotFoundError
 import ru.vassuv.testmediasofttask.warehouse.exception.productOrderReportError
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.KafkaProducer
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaEvent
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaTopic
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.OrderEntity
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.OrderProductEntity
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.CustomerRepository
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.OrderRepository
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.ProductRepository
-import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaEvent
-import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaTopic
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedOrder
 import ru.vassuv.testmediasofttask.warehouse.service.model.CustomerReportInfo
 import ru.vassuv.testmediasofttask.warehouse.service.model.OrderData
@@ -31,7 +32,6 @@ import ru.vassuv.testmediasofttask.warehouse.service.model.UpdatedOrder
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import kotlin.jvm.optionals.getOrNull
 
 /**
  * Реализация сервиса управления заказами ([OrderService]).
@@ -44,13 +44,13 @@ class OrderServiceImpl(
     private val productRepository: ProductRepository,
     private val orderRepository: OrderRepository,
     private val customerDataService: CustomerDataService,
-    private val kafkaProducerService: KafkaProducerService
+    private val kafkaProducer: KafkaProducer
 ) : OrderService {
 
     /**
      * Создание заказа.
      *
-     * @param customerId идентификатор заказчика.
+     * @param customerProfileId Идентификатор профиля заказчика
      * @param createdOrder данные создания заказа.
      *
      * @throws ProductNotFoundException если товар не найден.
@@ -59,9 +59,10 @@ class OrderServiceImpl(
      * @throws CustomerInactiveException если заказчик неактивен.
      */
     @Transactional
-    override fun createOrder(customerId: UUID, createdOrder: CreatedOrder): UUID {
-        val customer = customerRepository.findById(customerId).getOrNull()
-            ?: customerNotFoundError(customerId)
+    override fun createOrder(customerProfileId: UUID, createdOrder: CreatedOrder): UUID {
+
+        val customer = customerRepository.findFirstByProfileId(customerProfileId)
+            ?: customerNotFoundError(customerProfileId)
 
         customer.checkCustomerInactive()
 
@@ -101,10 +102,10 @@ class OrderServiceImpl(
 
         orderRepository.save(order)
 
-        kafkaProducerService.sendEvent(
+        kafkaProducer.sendEvent(
             topic = KafkaTopic.WAREHOUSE,
             event = KafkaEvent.Order.Create(
-                customerId = customerId,
+                customerId = customer.id!!,
                 deliveryAddress = order.deliveryAddress,
                 products = order.orderProducts.map {
                     KafkaEvent.Order.Create.Product(
@@ -122,6 +123,7 @@ class OrderServiceImpl(
     /**
      * Изменение существующего заказа.
      *
+     * @param customerProfileId Идентификатор профиля заказчика
      * @param orderId идентификатор заказа.
      * @param updatedOrder данные изменения заказа.
      *
@@ -133,10 +135,10 @@ class OrderServiceImpl(
      * @throws CustomerInactiveException если заказчик неактивен.
      */
     @Transactional
-    override fun updateOrder(customerId: UUID, orderId: UUID, updatedOrder: UpdatedOrder) {
-
-        val customer = customerRepository.findById(customerId).getOrNull()
-            ?: customerNotFoundError(customerId)
+    override fun updateOrder(customerProfileId: UUID, orderId: UUID, updatedOrder: UpdatedOrder) {
+        val customer = customerRepository.findFirstByProfileId(customerProfileId)
+            ?: customerNotFoundError(customerProfileId)
+        val customerId = customer.id!!
 
         customer.checkCustomerInactive()
 
@@ -201,7 +203,7 @@ class OrderServiceImpl(
             }
         }
 
-        kafkaProducerService.sendEvent(
+        kafkaProducer.sendEvent(
             topic = KafkaTopic.WAREHOUSE,
             event = KafkaEvent.Order.Update(
                 orderId = orderId,
@@ -262,6 +264,7 @@ class OrderServiceImpl(
      * Отменяет заказ, переводя его в статус CANCELED.
      * Возвращает товар обратно на склад.
      *
+     * @param customerProfileId Идентификатор профиля заказчика
      * @param orderId идентификатор отменяемого заказа.
      *
      * @throws OrderNotFoundException если заказ не найден.
@@ -270,9 +273,11 @@ class OrderServiceImpl(
      * @throws CustomerInactiveException если заказчик неактивен.
      */
     @Transactional
-    override fun cancelOrder(customerId: UUID, orderId: UUID) {
-        val customer = customerRepository.findById(customerId).getOrNull()
-            ?: customerNotFoundError(customerId)
+    override fun cancelOrder(customerProfileId: UUID, orderId: UUID) {
+        val customer = customerRepository.findFirstByProfileId(customerProfileId)
+            ?: customerNotFoundError(customerProfileId)
+
+        val customerId = customer.id!!
 
         customer.checkCustomerInactive()
 
@@ -295,7 +300,7 @@ class OrderServiceImpl(
             product.quantityUpdatedAt = ZonedDateTime.now()
         }
 
-        kafkaProducerService.sendEvent(
+        kafkaProducer.sendEvent(
             topic = KafkaTopic.WAREHOUSE,
             event = KafkaEvent.Order.Delete(
                 orderId = orderId,
@@ -341,7 +346,7 @@ class OrderServiceImpl(
             throw IllegalStateException("Не удалось обновить статус заказа $orderId")
         }
 
-        kafkaProducerService.sendEvent(
+        kafkaProducer.sendEvent(
             topic = KafkaTopic.WAREHOUSE,
             event = KafkaEvent.Order.UpdateStatus(
                 orderId = orderId,

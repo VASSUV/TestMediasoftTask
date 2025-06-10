@@ -21,4 +21,12 @@ interface CustomerRepository : JpaRepository<CustomerEntity, UUID> {
      * @return true, если заказчик с таким логином или email уже существует; иначе false.
      */
     fun existsByLoginOrEmail(login: String, email: String): Boolean
+
+    /**
+     * Находит первого заказчика по его profileId
+     *
+     * @param profileId идентификатор профиля заказчика.
+     * @return Объект заказчика ([CustomerEntity]).
+     */
+    fun findFirstByProfileId(profileId: UUID): CustomerEntity?
 }

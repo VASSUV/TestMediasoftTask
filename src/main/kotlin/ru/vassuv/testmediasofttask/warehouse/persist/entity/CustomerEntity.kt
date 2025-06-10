@@ -21,6 +21,10 @@ class CustomerEntity(
     @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
 
+    /** Уникальный идентификатор профиля заказчика */
+    @Column(nullable = false, unique = true)
+    var profileId: UUID,
+
     /** Уникальный логин заказчика для входа в систему. */
     @Column(nullable = false, unique = true)
     var login: String,

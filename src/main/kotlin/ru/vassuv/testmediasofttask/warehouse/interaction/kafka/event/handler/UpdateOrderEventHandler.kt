@@ -1,7 +1,7 @@
-package ru.vassuv.testmediasofttask.warehouse.service.event.handler
+package ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.handler
 
 import org.springframework.stereotype.Component
-import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaEvent
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaEvent
 
 /**
  * Обработчик событий типа [KafkaEvent.Order.Update]

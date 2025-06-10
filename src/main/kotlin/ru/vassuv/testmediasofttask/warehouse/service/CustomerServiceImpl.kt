@@ -1,12 +1,12 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
-import org.apache.kafka.clients.producer.KafkaProducer
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.vassuv.testmediasofttask.warehouse.exception.CustomerAlreadyExistsException
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.KafkaProducer
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.CustomerEntity
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.CustomerRepository
-import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaTopic
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaTopic
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedCustomer
 import java.util.*
 
@@ -18,7 +18,7 @@ import java.util.*
 @Service
 class CustomerServiceImpl(
     private val customerRepository: CustomerRepository,
-    private val kafkaProducerService: KafkaProducerService
+    private val kafkaProducer: KafkaProducer
 ) : CustomerService {
 
     /**
@@ -40,12 +40,13 @@ class CustomerServiceImpl(
         val customer = CustomerEntity(
             login = request.login,
             email = request.email,
-            isActive = request.isActive
+            profileId = request.profileId,
+            isActive = request.isActive,
         )
 
         customerRepository.save(customer)
 
-        kafkaProducerService.sendStringMessage(
+        kafkaProducer.sendStringMessage(
             topic = KafkaTopic.TEST,
             message = request.toString(),
             key = "create customer ${customer.id!!}"

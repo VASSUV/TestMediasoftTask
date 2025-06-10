@@ -1,4 +1,4 @@
-package ru.vassuv.testmediasofttask.warehouse.service.event
+package ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo

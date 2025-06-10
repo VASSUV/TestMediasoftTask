@@ -33,6 +33,12 @@ spring:
   aop:
     auto: true
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: https://rhumb.mediasoft.team/rhumb-auth-api/auth/.well-known/jwks.json
+
   cache:
     cache-names: currencies
     type: caffeine

@@ -1,6 +1,6 @@
-package ru.vassuv.testmediasofttask.warehouse.service.event.handler
+package ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.handler
 
-import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaEvent
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaEvent
 
 /**
  * Интерфейс обработчика всех типов событий kafka

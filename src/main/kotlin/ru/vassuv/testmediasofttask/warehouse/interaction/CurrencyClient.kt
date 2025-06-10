@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import ru.vassuv.testmediasofttask.warehouse.config.properties.RestServiceProperties
-import ru.vassuv.testmediasofttask.warehouse.interaction.model.ExchangesCurrency
+import ru.vassuv.testmediasofttask.warehouse.interaction.rest.model.ExchangesCurrency
 
 /**
  * Интерфейс клиента для получения информации о курсах валют.
@@ -24,8 +24,8 @@ interface CurrencyClient {
 /**
  * Реализация клиента для взаимодействия с реальным внешним сервисом курсов валют.
  *
- * @property webClient клиент для HTTP-запросов.
- * @property method URI-метод для получения курсов валют.
+ * @property webClientBuilder билдер для веб клиента
+ * @property restServiceProperties параметры для rest сервисов
  */
 @Service
 @ConditionalOnProperty(name = ["rest.currency.mock-enabled"], havingValue = "false", matchIfMissing = true)
@@ -63,5 +63,5 @@ class CurrencyClientMock : CurrencyClient {
         china = 0.9.toBigDecimal(),
         usa = 0.8.toBigDecimal(),
         russia = 1.toBigDecimal(),
-        )
+    )
 }
