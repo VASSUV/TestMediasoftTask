@@ -25,6 +25,7 @@ spec:
                 name: {{ include "chart.fullname" $ }}
                 port:
                   number: 8088 #должно соответствовать порту сервиса, который в свою очередь указывает на 9090 порт пода
+
           - path: /(actuator(?:/|$).*) #запросы по такому адресу в кластер будут направляться в сервис demo-service на порт 9099
             pathType: Prefix
             backend:

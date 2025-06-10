@@ -1,6 +1,6 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
-import ru.vassuv.testmediasofttask.warehouse.interaction.model.ExchangesCurrency
+import ru.vassuv.testmediasofttask.warehouse.interaction.rest.model.ExchangesCurrency
 
 /**
  * Интерфейс сервиса, предоставляющего актуальные курсы валют.

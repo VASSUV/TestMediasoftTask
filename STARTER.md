@@ -197,10 +197,13 @@ http://localhost/
 
 ---
 
-## 🧪 9. Проброс IP для database postgress
+## 🧪 9. Проброс IP для 
 
-```bash
-   
+```bash для ingress
+    kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8090:80
+```
+```bash для сваггер
+   kubectl port-forward -n warehouse-ns pod/warehouse-warehouse-app-85bfdd4c8-x4kvf  8081:8080 
 ```
 
 ## 10. скрипты
@@ -216,7 +219,7 @@ http://localhost/
 ```
 ```bash
    eval $(minikube docker-env)
-   docker build -t warehouse-app:v32 .
+   docker build -t warehouse-app:v51 .
    
    helm install warehouse ./deployment/helm/ --namespace warehouse-ns --create-namespace
 
@@ -225,7 +228,13 @@ http://localhost/
 ```bash лог второго пода в namespace
    kubectl logs -f $(kubectl get pods -n warehouse-ns --no-headers | sed -n '2p' | awk '{print $1}') -n warehouse-ns
 ```
-
 ```bash лог третьего пода в namespace
    kubectl logs -f $(kubectl get pods -n warehouse-ns --no-headers | sed -n '3p' | awk '{print $1}') -n warehouse-ns
+```
+
+```bash describe второго пода в namespace
+   kubectl describe pod $(kubectl get pods -n warehouse-ns --no-headers | sed -n '2p' | awk '{print $1}') -n warehouse-ns
+```
+```bash describe третьего пода в namespace
+   kubectl describe pod  $(kubectl get pods -n warehouse-ns --no-headers | sed -n '3p' | awk '{print $1}') -n warehouse-ns
 ```

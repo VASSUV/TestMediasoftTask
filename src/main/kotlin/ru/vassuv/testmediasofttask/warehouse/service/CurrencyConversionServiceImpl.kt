@@ -4,7 +4,7 @@ import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
 import ru.vassuv.testmediasofttask.warehouse.controller.filter.CurrencySession
 import ru.vassuv.testmediasofttask.warehouse.enums.CurrencyType
-import ru.vassuv.testmediasofttask.warehouse.interaction.model.ExchangesCurrency
+import ru.vassuv.testmediasofttask.warehouse.interaction.rest.model.ExchangesCurrency
 import ru.vassuv.testmediasofttask.warehouse.service.model.ExchangeRateInfo
 
 /**

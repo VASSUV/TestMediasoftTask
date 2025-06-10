@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import ru.vassuv.testmediasofttask.warehouse.config.security.WarehousePrincipal
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateOrderRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderStatusRequest
@@ -39,7 +40,7 @@ interface OrderController {
      *
      * Товары резервируются со склада ([ProductEntity]), уменьшая доступное количество.
      *
-     * @param customerId идентификатор заказчика, для которого создаётся заказ.
+     * @param principal параметры из аутентификации ([WarehousePrincipal]).
      * @param request данные нового заказа ([CreateOrderRequest]).
      * @return идентификатор созданного заказа ([UuidResponse]).
      *
@@ -52,14 +53,14 @@ interface OrderController {
         summary = "Создание заказа",
         description = "Создаёт заказ для указанного заказчика с резервированием товаров на складе."
     )
-    fun createOrder(customerId: UUID, request: CreateOrderRequest): ResponseEntity<UuidResponse>
+    fun createOrder(principal: WarehousePrincipal, request: CreateOrderRequest): ResponseEntity<UuidResponse>
 
     /**
      * Обновляет позиции существующего заказа ([OrderEntity]).
      *
      * Товары перераспределяются с учётом новых данных, обновляется резерв на складе.
      *
-     * @param customerId идентификатор заказчика, передаётся в заголовке запроса.
+     * @param principal параметры из аутентификации ([WarehousePrincipal]).
      * @param orderId идентификатор заказа.
      * @param request обновлённые позиции заказа ([UpdateOrderRequest]).
      * @return HTTP-ответ со статусом NO_CONTENT.
@@ -73,7 +74,7 @@ interface OrderController {
         summary = "Обновление заказа",
         description = "Обновляет позиции заказа с проверкой наличия товара и корректности статуса."
     )
-    fun updateOrder(customerId: UUID, orderId: UUID, request: UpdateOrderRequest): ResponseEntity<Void>
+    fun updateOrder(principal: WarehousePrincipal, orderId: UUID, request: UpdateOrderRequest): ResponseEntity<Void>
 
     /**
      * Возвращает информацию о заказе по идентификатору.
@@ -95,7 +96,7 @@ interface OrderController {
      *
      * Меняет статус заказа на [OrderStatus.CANCELED].
      *
-     * @param customerId идентификатор заказчика, передаётся в заголовке запроса.
+     * @param principal параметры из аутентификации ([WarehousePrincipal]).
      * @param orderId идентификатор заказа для отмены.
      * @return HTTP-ответ со статусом NO_CONTENT.
      *
@@ -106,7 +107,7 @@ interface OrderController {
         summary = "Отмена заказа",
         description = "Отменяет заказ и возвращает зарезервированные товары обратно на склад."
     )
-    fun cancelOrder(customerId: UUID, orderId: UUID): ResponseEntity<Void>
+    fun cancelOrder(principal: WarehousePrincipal, orderId: UUID): ResponseEntity<Void>
 
     /**
      * Подтверждение заказа (реализация будет позже).

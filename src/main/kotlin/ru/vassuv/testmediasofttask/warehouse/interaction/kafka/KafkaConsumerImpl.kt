@@ -1,12 +1,12 @@
-package ru.vassuv.testmediasofttask.warehouse.service
+package ru.vassuv.testmediasofttask.warehouse.interaction.kafka
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
-import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaEvent
-import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaEventDispatcher
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaEvent
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaEventDispatcher
 
 /**
  * Сервис для отслеживания сообщений из kafka
@@ -15,10 +15,10 @@ import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaEventDispatcher
  * @property dispatcher
  */
 @Component
-class KafkaEventConsumer(
+class KafkaConsumerImpl(
     private val objectMapper: ObjectMapper,
     private val dispatcher: KafkaEventDispatcher
-) {
+): KafkaConsumer {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 

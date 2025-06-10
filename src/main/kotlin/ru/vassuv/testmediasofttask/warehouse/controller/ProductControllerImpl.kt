@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.data.web.PageableDefault
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.ModelAttribute
@@ -15,6 +16,8 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import ru.vassuv.testmediasofttask.warehouse.support.Consts.SecurityRoleRules.ROLES_ALL
+import ru.vassuv.testmediasofttask.warehouse.support.Consts.SecurityRoleRules.ROLES_NOT_USER
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toCreatedProduct
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toProductResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toUpdatedProduct
@@ -56,6 +59,7 @@ class ProductControllerImpl(
      * @return страница объектов [ProductResponse],
      * цены которых конвертированы в текущую валюту сессии ([CurrencyType]).
      */
+    @PreAuthorize(ROLES_ALL)
     @GetMapping
     override fun getProducts(pageable: Pageable) =
         currencyConversionService.getExchangeRateInfo()
@@ -72,6 +76,7 @@ class ProductControllerImpl(
      *
      * @throws ProductNotFoundException если товар с указанным идентификатором не найден.
      */
+    @PreAuthorize(ROLES_ALL)
     @GetMapping("/{id}")
     override fun getProductById(@PathVariable id: UUID) =
         currencyConversionService.getExchangeRateInfo()
@@ -88,6 +93,7 @@ class ProductControllerImpl(
      * @throws ProductExistsWithArticleException если товар с указанным артикулом уже существует.
      * @throws jakarta.validation.ValidationException при некорректных данных.
      */
+    @PreAuthorize(ROLES_NOT_USER)
     @PostMapping
     override fun createProduct(@Valid @RequestBody request: CreateProductRequest) =
         ResponseEntity.status(HttpStatus.CREATED)
@@ -104,6 +110,7 @@ class ProductControllerImpl(
      * @throws ProductExistsWithArticleException если артикул уже занят.
      * @throws jakarta.validation.ValidationException при некорректных данных.
      */
+    @PreAuthorize(ROLES_NOT_USER)
     @PutMapping("/{id}")
     override fun updateProduct(
         @PathVariable id: UUID,
@@ -119,6 +126,7 @@ class ProductControllerImpl(
      *
      * @throws ProductNotFoundException если товар не найден.
      */
+    @PreAuthorize(ROLES_NOT_USER)
     @DeleteMapping("/{id}")
     override fun deleteProduct(@PathVariable id: UUID) =
         ResponseEntity.status(HttpStatus.NO_CONTENT)
@@ -131,6 +139,7 @@ class ProductControllerImpl(
      * @param pageable параметры пагинации.
      * @return Страница найденных товаров ([ProductResponse]).
      */
+    @PreAuthorize(ROLES_ALL)
     @GetMapping("/search")
     override fun searchProducts(
         @ModelAttribute params: ProductSearchParams,
@@ -149,6 +158,7 @@ class ProductControllerImpl(
      * @param pageable параметры пагинации.
      * @return Страница найденных товаров ([ProductResponse]).
      */
+    @PreAuthorize(ROLES_ALL)
     @PostMapping("/search/smart")
     override fun smartSearch(
         @Valid @RequestBody filterRequest: SearchProductFilterRequest,

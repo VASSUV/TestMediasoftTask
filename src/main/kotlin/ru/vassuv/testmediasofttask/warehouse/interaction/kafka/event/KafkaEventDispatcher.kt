@@ -1,8 +1,8 @@
-package ru.vassuv.testmediasofttask.warehouse.service.event
+package ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import ru.vassuv.testmediasofttask.warehouse.service.event.handler.KafkaEventHandler
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.handler.KafkaEventHandler
 
 /**
  * Обработчик всех сообщений из kafka

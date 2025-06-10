@@ -1,21 +1,21 @@
-package ru.vassuv.testmediasofttask.warehouse.service
+package ru.vassuv.testmediasofttask.warehouse.interaction.kafka
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
-import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaEvent
-import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaTopic
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaEvent
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaTopic
 
 /**
  * Сервис для отправки сообщений в kafka
  */
 @Service
-class KafkaProducerServiceImpl(
+class KafkaProducerImpl(
     private val objectMapper: ObjectMapper,
     private val kafkaStringTemplate: KafkaTemplate<String, String>,
     private val kafkaByteArrayTemplate: KafkaTemplate<String, ByteArray>
-) : KafkaProducerService {
+) : KafkaProducer {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 

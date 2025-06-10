@@ -1,12 +1,12 @@
-package ru.vassuv.testmediasofttask.warehouse.service
+package ru.vassuv.testmediasofttask.warehouse.interaction.kafka
 
-import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaEvent
-import ru.vassuv.testmediasofttask.warehouse.service.event.KafkaTopic
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaEvent
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaTopic
 
 /**
  * Сервис для отправки сообщений в kafka
  */
-interface KafkaProducerService {
+interface KafkaProducer {
 
     /**
      * Отправка текстового сообщения

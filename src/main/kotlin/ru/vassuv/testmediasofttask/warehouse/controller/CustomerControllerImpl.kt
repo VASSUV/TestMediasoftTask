@@ -3,10 +3,12 @@ package ru.vassuv.testmediasofttask.warehouse.controller
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import ru.vassuv.testmediasofttask.warehouse.support.Consts.SecurityRoleRules.ROLES_NOT_USER
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toCreatedCustomer
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateCustomerRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.response.CustomerCreatedResponse
@@ -38,6 +40,7 @@ class CustomerControllerImpl(
      * @throws CustomerAlreadyExistsException если заказчик с такими же данными уже существует.
      * @throws ValidationException если входные данные не соответствуют заданным ограничениям.
      */
+    @PreAuthorize(ROLES_NOT_USER)
     @PostMapping
     override fun createCustomer(
         @Valid @RequestBody request: CreateCustomerRequest
