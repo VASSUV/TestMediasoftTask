@@ -18,6 +18,7 @@ java {
 
 repositories {
 	mavenCentral()
+	mavenLocal()
 }
 
 dependencies {
@@ -38,6 +39,7 @@ dependencies {
 	implementation("com.github.ben-manes.caffeine:caffeine")
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+	implementation("ru.vassuv:exception-handler-starter:0.0.4-SNAPSHOT")
 	runtimeOnly("com.h2database:h2")
 
 	runtimeOnly("org.postgresql:postgresql")
