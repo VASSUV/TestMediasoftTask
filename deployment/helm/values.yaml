@@ -11,9 +11,14 @@ deployment:
     port: 5432
     replicas: 1
 
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClass: standard
+
 image:
   repository: warehouse-app
-  tag: v55
+  tag: v67
   pullPolicy: IfNotPresent
 
 config:

@@ -6,4 +6,6 @@
        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <include file="db/changelog/task7/001-add_profile_id_to_customer.xml"/>
+    <include file="/db/changelog/task7/002-add_product_image_table.xml"/>
+
 </databaseChangeLog>

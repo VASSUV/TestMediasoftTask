@@ -43,7 +43,7 @@ class KafkaConsumerImpl(
      */
     @Suppress("TooGenericExceptionCaught")
     @KafkaListener(
-        topics = ["warehouse_topic"],
+        topics = ["warehouse_topic", "delete_product_image_topic"],
         groupId = "warehouse-group",
         containerFactory = "kafkaListenerContainerFactoryByteArray",
     )

@@ -7,5 +7,6 @@ package ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event
  */
 enum class KafkaTopic(val topicName: String) {
     WAREHOUSE("warehouse_topic"),
+    DELETE_PRODUCT_IMAGE("delete_product_image_topic"),
     TEST("test_topic"),
 }

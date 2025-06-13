@@ -19,6 +19,14 @@ import java.util.UUID
 )
 sealed interface KafkaEvent {
 
+    sealed interface Product : KafkaEvent {
+
+        data class DeleteImage(
+            val productId: UUID,
+            val keys: List<String>
+        ): Product
+    }
+
     /**
      * Интерфейс для обощения событий по типу Заказ
      */
