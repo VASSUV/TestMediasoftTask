@@ -40,6 +40,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	implementation("ru.vassuv:exception-handler-starter:0.0.4-SNAPSHOT")
+	implementation("software.amazon.awssdk:s3:2.25.21")
+	implementation("software.amazon.awssdk:auth:2.25.21")
 	runtimeOnly("com.h2database:h2")
 
 	runtimeOnly("org.postgresql:postgresql")

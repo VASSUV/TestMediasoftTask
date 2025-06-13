@@ -6,11 +6,18 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionSynchronization
+import org.springframework.transaction.support.TransactionSynchronizationManager
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductExistsWithArticleException
 import ru.vassuv.testmediasofttask.warehouse.exception.ProductNotFoundException
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.KafkaProducer
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaEvent
+import ru.vassuv.testmediasofttask.warehouse.interaction.kafka.event.KafkaTopic
 import ru.vassuv.testmediasofttask.warehouse.persist.entity.ProductEntity
+import ru.vassuv.testmediasofttask.warehouse.persist.repository.ProductImageRepository
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.ProductRepository
 import ru.vassuv.testmediasofttask.warehouse.service.model.mappers.toProductData
 import ru.vassuv.testmediasofttask.warehouse.service.model.mappers.toProductEntity
@@ -26,10 +33,13 @@ import java.util.*
  * Реализует бизнес-логику управления товарами на складе.
  *
  * @property productRepository репозиторий товаров ([ProductRepository]).
+ * @property productImageRepository репозиторий товаров ([ProductImageRepository]).
  */
 @Service
 class ProductServiceImpl(
-    private val productRepository: ProductRepository
+    private val productRepository: ProductRepository,
+    private val productImageRepository: ProductImageRepository,
+    private val kafkaProducer: KafkaProducer
 ) : ProductService {
 
     /**
@@ -108,10 +118,20 @@ class ProductServiceImpl(
      *
      * @throws [ProductNotFoundException] если товар не найден.
      */
-    @Transactional(readOnly = true)
+    @Transactional()
     override fun deleteProduct(id: UUID) {
         if (!productRepository.existsById(id)) throw ProductNotFoundException(id)
         productRepository.deleteById(id)
+        val images = productImageRepository.findAllByProductId(id)
+        productImageRepository.deleteAllByProductId(id)
+        TransactionSynchronizationManager.registerSynchronization(object : TransactionSynchronization {
+            override fun afterCommit() {
+                kafkaProducer.sendEvent(
+                    KafkaTopic.DELETE_PRODUCT_IMAGE,
+                    KafkaEvent.Product.DeleteImage(id, images.map { it.s3Key })
+                )
+            }
+        })
     }
 
     /**
