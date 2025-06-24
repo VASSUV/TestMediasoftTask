@@ -1,0 +1,22 @@
+#namespace: excamad-ns
+#replicaCount: 1
+#
+#image:
+#  repository: kotovdenis/excamad
+#  tag: latest
+#  pullPolicy: IfNotPresent
+#
+#camunda:
+#  restUrl: http://camunda-service:8080/engine-rest
+#
+#service:
+#  type: ClusterIP
+#  port: 8888
+#
+#ingress:
+#  enabled: true
+#  className: nginx
+#  host: minikube
+#  path: /excamad
+#  annotations:
+#    nginx.ingress.kubernetes.io/rewrite-target: /

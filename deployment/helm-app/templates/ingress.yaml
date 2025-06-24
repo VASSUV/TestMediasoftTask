@@ -1,0 +1,37 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "chart.fullname" . }}-ingress
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.appName }}
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    {{- with .Values.ingress.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - host: {{ .Values.ingress.host }}
+      http:
+
+        paths:
+          - path: /(.*) #запросы по такому адресу в кластер будут направляться в сервис demo-service на порт 8080
+            pathType: Prefix
+            backend:
+              service:
+                name: warehouse-warehouse-app
+                port:
+                  number: 8080 #должно соответствовать порту сервиса, который в свою очередь указывает на 8080 порт пода
+
+          - path: /(actuator(?:/|$).*) #запросы по такому адресу в кластер будут направляться в сервис demo-service на порт 9090
+            pathType: Prefix
+            backend:
+              service:
+                name: warehouse-warehouse-app
+                port:
+                  number: 9090 #должно соответствовать порту сервиса, который в свою очередь указывает на 9090 порт пода
+
+{{- end }}

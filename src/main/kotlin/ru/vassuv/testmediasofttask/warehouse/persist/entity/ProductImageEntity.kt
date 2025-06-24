@@ -3,6 +3,7 @@ package ru.vassuv.testmediasofttask.warehouse.persist.entity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.util.UUID
@@ -12,7 +13,7 @@ import java.util.UUID
 data class ProductImageEntity(
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     val id: UUID? = null,
 
     @Column(name = "product_id", nullable = false)

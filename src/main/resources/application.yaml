@@ -1,4 +1,3 @@
-
 management:
   server:
     port: 9090
@@ -25,19 +24,22 @@ spring:
       ddl-auto: validate
     show-sql: true
     properties:
-      hibernate.format_sql: true
+      hibernate:
+        default_schema: warehouse_app
+        format_sql: true
 
   liquibase:
+    default-schema: warehouse_app
     change-log: classpath:db/changelog/db.changelog-master.xml
 
   aop:
     auto: true
 
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: https://rhumb.mediasoft.team/rhumb-auth-api/auth/.well-known/jwks.json
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          jwk-set-uri: https://rhumb.mediasoft.team/rhumb-auth-api/auth/.well-known/jwks.json
 
   cache:
     cache-names: currencies
@@ -97,12 +99,59 @@ rest:
       accountNumbers: /api/account-numbers
   currency:
     mock-enabled: false
-    host:  ${CURRENCY_SERVICE_HOST:http://currency-service}
+    host: ${CURRENCY_SERVICE_HOST:http://currency-service}
     methods:
       currencies: /api/currencies
+  contract:
+    mock-enabled: false
+    host: ${CONTRACT_SERVICE_HOST:http://contract-service}
+    methods:
+      contract: /api/contract
+      contractEnable: /api/contract/enable
+  delivery:
+    mock-enabled: false
+    host: ${DELIVERY_SERVICE_HOST:http://delivery-service}
+    methods:
+      register: /api/register
+      complete: /api/delivery/complete
+  payment:
+    mock-enabled: false
+    host: ${PAYMENT_SERVICE_HOST:http://payment-service}
+    methods:
+      pay: /api/pay
+
+
 #logging:
 #  level:
 #    org.springframework.kafka.listener: DEBUG
+#    org.springframework.web: DEBUG
+#    org.springframework.boot.autoconfigure.web: DEBUG
+
+camunda:
+  custom:
+    datasource:
+      url: ${CAMUNDA_DATASOURCE_URL}
+      scheme: ${CAMUNDA_DATASOURCE_SCHEME}
+      username: ${CAMUNDA_DATASOURCE_USERNAME}
+      password: ${CAMUNDA_DATASOURCE_PASSWORD}
+  bpm:
+    auto-deployment-enabled: true
+    webapp:
+      enabled: false
+    default-serialization-format: application/json
+    history-level: auto
+    database:
+      schema-update: true
+    admin-user:
+      id: ${CAMUNDA_USERNAME}
+      password: ${CAMUNDA_PASSWORD}
+      email: ${CAMUNDA_USERNAME}@vassuv.ru
+      firstName: ${CAMUNDA_USERNAME}
+    metrics:
+      enabled: false
+      db-reporter-activate: false
+
+
 ---
 
 spring:

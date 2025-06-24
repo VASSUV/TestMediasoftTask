@@ -1,56 +1,68 @@
-namespace: warehouse-ns
-appName: warehouse
-
-replicaCount: 2
-
-secret:
-  name: warehouse-secret
-deployment:
-  db:
-    image: postgres:latest
-    port: 5432
-    replicas: 1
-
-persistence:
-  enabled: true
-  size: 1Gi
-  storageClass: standard
-
-image:
-  repository: warehouse-app
-  tag: v67
-  pullPolicy: IfNotPresent
-
-config:
-  innServiceHost: http://inn-inn-service.inn-ns.svc.cluster.local:8083
-  accountNumberServiceHost: http://account-number-account-number-service.account-number-ns.svc.cluster.local:8084
-  currencyServiceHost: http://currency-currency-service.currency-ns.svc.cluster.local:8082
-  kafkaServiceHost: kafka-kraft-kafka.default.svc.cluster.local:9092
-
-service:
-  type: LoadBalancer
-  db:
-    name: postgresql-warehouse-postgres-service
-    host: "postgresql-warehouse-postgres-service"
-    type: ClusterIP
-    port: 5432
-    sport: "5432"
-    dbname: warehouse_db
-    dbschema: public
-    username: admin # YWRtaW4= #admin
-    password: password # cGFzc3dvcmQ= #password
-
-ingress:
-  enabled: true
-  className: nginx
-  host: minikube
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-
-
-nodeSelector: {}
-
-tolerations: []
-
-affinity: {}
-
+#namespace: warehouse-ns
+#appName: warehouse
+#
+#replicaCount: 1
+#
+#secret:
+#  name: warehouse-secret
+#deployment:
+#  db:
+#    image: postgres:latest
+#    port: 5432
+#    replicas: 1
+#
+#persistence:
+#  enabled: true
+#  size: 1Gi
+#  storageClass: standard
+#
+#image:
+#  repository: warehouse-app
+#  tag: v72
+#  pullPolicy: IfNotPresent
+#
+#config:
+#  innServiceHost: http://inn-inn-service.inn-ns.svc.cluster.local:8083
+#  accountNumberServiceHost: http://account-number-account-number-service.account-number-ns.svc.cluster.local:8084
+#  currencyServiceHost: http://currency-currency-service.currency-ns.svc.cluster.local:8082
+#  contractServiceHost: http://contract-contract-service.contract-ns.svc.cluster.local:8085
+#  deliveryServiceHost: http://delivery-delivery-service.delivery-ns.svc.cluster.local:8086
+#  paymentServiceHost: http://payment-payment-service.payment-ns.svc.cluster.local:8087
+#  kafkaServiceHost: kafka-kraft-kafka.default.svc.cluster.local:9092
+#
+#service:
+#  type: LoadBalancer
+#
+#  db:
+#    name: postgresql-warehouse-postgres-service
+#    host: "postgresql-warehouse-postgres-service"
+#    type: ClusterIP
+#    port: 5432
+#    sport: "5432"
+#    dbname: warehouse_db
+#    dbschema: public
+#    username: admin # YWRtaW4= #admin
+#    password: password # cGFzc3dvcmQ= #password
+#
+#ingress:
+#  enabled: true
+#  className: nginx
+#  host: minikube
+#  annotations:
+#    nginx.ingress.kubernetes.io/rewrite-target: /$1
+#
+#
+#camunda:
+#  username: demo
+#  password: demo
+#  db:
+#    username: camunda_user
+#    password: camunda_pass
+#    scheme: camunda_service
+#
+#nodeSelector: {}
+#
+#tolerations: []
+#
+#affinity: {}
+#

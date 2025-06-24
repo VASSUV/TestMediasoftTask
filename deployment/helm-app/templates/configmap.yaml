@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "chart.fullname" . }}-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.appName }}
+
+{{/*  annotations:*/}}
+{{/*    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}*/}}
+{{/*    app.kubernetes.io/managed-by: Helm*/}}
+data:
+  INN_SERVICE_HOST: {{ .Values.config.innServiceHost | quote }}
+  ACCOUNT_SERVICE_HOST: {{ .Values.config.accountServiceHost | quote }}
+  CURRENCY_SERVICE_HOST: {{ .Values.config.currencyServiceHost | quote }}

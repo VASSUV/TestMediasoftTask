@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: excamad-service
+  namespace: warehouse-ns
+spec:
+  selector:
+    app: excamad
+  ports:
+    - port: 9098
+      targetPort: 8080

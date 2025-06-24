@@ -1,5 +1,6 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
+import org.camunda.bpm.engine.RuntimeService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.vassuv.testmediasofttask.warehouse.enums.OrderStatus
@@ -23,6 +24,7 @@ import ru.vassuv.testmediasofttask.warehouse.persist.entity.OrderProductEntity
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.CustomerRepository
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.OrderRepository
 import ru.vassuv.testmediasofttask.warehouse.persist.repository.ProductRepository
+import ru.vassuv.testmediasofttask.warehouse.service.model.ConfirmOrderResult
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedOrder
 import ru.vassuv.testmediasofttask.warehouse.service.model.CustomerReportInfo
 import ru.vassuv.testmediasofttask.warehouse.service.model.OrderData
@@ -44,7 +46,8 @@ class OrderServiceImpl(
     private val productRepository: ProductRepository,
     private val orderRepository: OrderRepository,
     private val customerDataService: CustomerDataService,
-    private val kafkaProducer: KafkaProducer
+    private val kafkaProducer: KafkaProducer,
+    private val runtimeService: RuntimeService
 ) : OrderService {
 
     /**
@@ -432,9 +435,100 @@ class OrderServiceImpl(
      */
     private fun isStatusTransitionAllowed(current: OrderStatus, new: OrderStatus): Boolean {
         return when (current) {
-            OrderStatus.CREATED -> new in setOf(OrderStatus.CONFIRMED, OrderStatus.CANCELED, OrderStatus.REJECTED)
+            OrderStatus.CREATED -> new in setOf(OrderStatus.PROCESSING)
             OrderStatus.CONFIRMED -> new in setOf(OrderStatus.DONE, OrderStatus.CANCELED)
+            OrderStatus.PROCESSING -> new in setOf(OrderStatus.CONFIRMED, OrderStatus.CANCELED, OrderStatus.REJECTED)
             OrderStatus.DONE, OrderStatus.CANCELED, OrderStatus.REJECTED -> false
         }
+    }
+
+    /**
+     * Подтверждение заказа.
+     *
+     * @param orderId идентификатор заказа.
+     * @return Результат подтверждения заказа.
+     */
+    @Transactional
+    override fun confirmOrder(orderId: UUID): ConfirmOrderResult {
+        val order = orderRepository.findById(orderId)
+            .orElseThrow { OrderNotFoundException(orderId) }
+
+        if (order.status != OrderStatus.CREATED) {
+            throw IllegalOrderStatusException(
+                orderId = orderId,
+                currentStatus = order.status,
+                message = "Невозможно начать процесс подтверждения заказа"
+            )
+        }
+
+        // получаем данные заказчика
+        val customerLogin = order.customer.login
+        val logins = setOf(customerLogin)
+
+        val innFuture = CompletableFuture
+            .supplyAsync { customerDataService.getInns(logins) }
+            .exceptionally { ex ->
+                productOrderReportError("Ошибка при получении ИНН: ${ex.message}", ex)
+            }
+        val accFuture = CompletableFuture
+            .supplyAsync { customerDataService.getAccountNumbers(logins) }
+            .exceptionally { ex ->
+                productOrderReportError("Ошибка при получении номера счета: ${ex.message}", ex)
+            }
+
+        val inn = innFuture.join().values.first()
+        val accountNumber = accFuture.join().values.first()
+        val businessKey = orderId.toString()
+
+        var totalPrice = 0.toBigDecimal()
+        order.orderProducts.forEach { orderProduct ->
+            totalPrice = totalPrice.add(orderProduct.price.multiply(orderProduct.quantity))
+        }
+
+        // запускаем процесс
+        runtimeService.startProcessInstanceByKey(
+            "ProcessOrderConfirmation",
+            businessKey,
+            mapOf(
+                "orderId" to order.id.toString(),
+                "address" to order.deliveryAddress,
+                "login" to customerLogin,
+                "inn" to inn,
+                "accountNumber" to accountNumber,
+                "amount" to totalPrice.toPlainString()
+            )
+        )
+
+        // сохраняем бизнес-ключ и статус
+        order.businessKey = businessKey
+        order.status = OrderStatus.PROCESSING
+        orderRepository.save(order)
+
+        return ConfirmOrderResult(
+            businessKey = businessKey,
+            status = order.status
+        )
+    }
+
+    /**
+     * Обновление статуса и businessKey в заказе
+     *
+     * @param orderId
+     * @param status
+     * @param businessKey
+     */
+    @Transactional
+    override fun updateStatusAndBusinessKey(orderId: UUID, status: OrderStatus, businessKey: String) {
+        val order = orderRepository.findById(orderId)
+            .orElseThrow { OrderNotFoundException(orderId) }
+
+        if (!isStatusTransitionAllowed(order.status, status)) {
+            throw IllegalOrderStatusException(orderId, order.status, "Нельзя перейти в статус $status")
+        }
+
+        order.status = status
+        order.businessKey = businessKey
+
+        orderRepository.save(order)
     }
 }

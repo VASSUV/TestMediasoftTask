@@ -212,7 +212,7 @@ http://localhost/
 ```
 ```bash
    eval $(minikube docker-env)
-   docker build -t warehouse-app:v67 .
+   docker build -t warehouse-app:v72 .
    
    helm install warehouse ./deployment/helm/ --namespace warehouse-ns --create-namespace
 

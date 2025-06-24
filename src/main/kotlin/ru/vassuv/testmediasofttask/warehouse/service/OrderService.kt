@@ -1,7 +1,7 @@
 package ru.vassuv.testmediasofttask.warehouse.service
 
-import ru.vassuv.testmediasofttask.warehouse.config.security.WarehousePrincipal
 import ru.vassuv.testmediasofttask.warehouse.enums.OrderStatus
+import ru.vassuv.testmediasofttask.warehouse.service.model.ConfirmOrderResult
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedOrder
 import ru.vassuv.testmediasofttask.warehouse.service.model.OrderData
 import ru.vassuv.testmediasofttask.warehouse.service.model.ProductOrderReportInfo
@@ -63,4 +63,21 @@ interface OrderService {
      * @return Отчет о продуктах и заказах([ProductOrderReportInfo]).
      */
     fun getProductOrderReport(): Map<UUID, List<ProductOrderReportInfo>>
+
+    /**
+     * Подтверждение заказа.
+     *
+     * @param orderId идентификатор заказа.
+     * @return Результат подтверждения заказа.
+     */
+    fun confirmOrder(orderId: UUID): ConfirmOrderResult
+
+    /**
+     * Обновление статуса и businessKey в заказе
+     *
+     * @param orderId
+     * @param status
+     * @param businessKey
+     */
+    fun updateStatusAndBusinessKey(orderId: UUID, status: OrderStatus, businessKey: String)
 }

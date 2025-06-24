@@ -39,11 +39,15 @@ class KafkaConsumerImpl(
     /**
      * Прослушивание bytearray сообщений
      *
-     * @param record получаема запись из kafka key-value
+     * @param record получаемая запись из kafka key-value
      */
     @Suppress("TooGenericExceptionCaught")
     @KafkaListener(
-        topics = ["warehouse_topic", "delete_product_image_topic"],
+        topics = [
+            "warehouse_topic",
+            "delete_product_image_topic",
+            "check_compliance_topic"
+        ],
         groupId = "warehouse-group",
         containerFactory = "kafkaListenerContainerFactoryByteArray",
     )

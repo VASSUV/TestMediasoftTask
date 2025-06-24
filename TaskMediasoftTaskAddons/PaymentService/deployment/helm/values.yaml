@@ -1,0 +1,21 @@
+namespace: payment-ns
+appName: payment
+
+replicaCount: 1
+
+image:
+  repository: payment-app
+  tag: v5
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8087
+
+ingress:
+  enabled: true
+  className: nginx
+  host: minikube
+  path: /payment/(.*)
+  rewrite: /$1
+  port: 8087

@@ -1,0 +1,25 @@
+namespace: warehouse-db-ns
+appName: warehouse-db
+
+deployment:
+  db:
+    image: postgres:15
+    port: 5432
+    replicas: 1
+
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClass: standard
+
+service:
+  db:
+    name: postgresql-warehouse-postgres-service
+    host: "postgresql-warehouse-postgres-service"
+    type: ClusterIP
+    port: 5432
+    sport: "5432"
+    dbname: warehouse_db
+    dbschema: public
+    username: admin
+    password: password

@@ -1,0 +1,25 @@
+spring:
+  application.name: ContractService
+
+  datasource:
+    url: jdbc:postgresql://postgresql-warehouse-postgres-service.warehouse-db-ns.svc.cluster.local:5432/warehouse_db
+    username: contract_user
+    password: contract_pass
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: contract_service
+
+  liquibase:
+    default-schema: contract_service
+
+logging:
+  level:
+    org.springframework.boot.context: DEBUG
+
+server:
+  port: 8085

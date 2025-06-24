@@ -1,3 +1,6 @@
+import org.gradle.kotlin.dsl.withType
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
 	kotlin("jvm") version "1.9.23"
 	kotlin("plugin.spring") version "1.9.23"
@@ -22,29 +25,37 @@ repositories {
 }
 
 dependencies {
+	/** starters */
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+	implementation("org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:7.23.0")
+	implementation("org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-webapp:7.23.0")
+	implementation("org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-rest:7.23.0")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
-	implementation("org.liquibase:liquibase-core")
 	implementation("org.springframework.boot:spring-boot-starter-jdbc")
 	implementation("org.springframework.boot:spring-boot-starter-aop")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.boot:spring-boot-starter-cache")
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+	implementation("org.springframework.boot:spring-boot-starter-security")
+	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+
+
+	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+	implementation("org.jetbrains.kotlin:kotlin-reflect")
+	implementation("org.liquibase:liquibase-core")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.springframework.kafka:spring-kafka")
 	implementation("com.github.ben-manes.caffeine:caffeine")
-	implementation("org.springframework.boot:spring-boot-starter-security")
-	implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
 	implementation("ru.vassuv:exception-handler-starter:0.0.4-SNAPSHOT")
 	implementation("software.amazon.awssdk:s3:2.25.21")
 	implementation("software.amazon.awssdk:auth:2.25.21")
-	runtimeOnly("com.h2database:h2")
 
 	runtimeOnly("org.postgresql:postgresql")
+	runtimeOnly("com.h2database:h2")
+
+	/** tests */
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
@@ -71,6 +82,11 @@ allOpen {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+
+tasks.withType<BootJar> {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 
 detekt {
 	config.setFrom("config/detekt/detekt.yml")

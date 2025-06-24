@@ -9,4 +9,5 @@
     <include file="classpath:db/changelog/task1/db.changelog-task1.xml"/>
     <include file="classpath:db/changelog/task4/db.changelog-task4.xml"/>
     <include file="classpath:db/changelog/task7/db.changelog-task7.xml"/>
+    <include file="classpath:db/changelog/task8/db.changelog-task8.xml"/>
 </databaseChangeLog>

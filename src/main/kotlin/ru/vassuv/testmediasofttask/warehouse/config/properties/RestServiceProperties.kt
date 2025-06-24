@@ -9,7 +9,10 @@ data class RestServiceProperties(
     var inn: Service<InnMethods>,
     @JsonProperty("account-number")
     var accountNumber: Service<AccountNumberMethods>,
-    var currency: Service<CurrencyMethods>
+    var currency: Service<CurrencyMethods>,
+    var contract: Service<ContractMethods>,
+    var delivery: Service<DeliveryMethods>,
+    var payment: Service<PaymentMethods>
 ) {
 
 
@@ -29,5 +32,19 @@ data class RestServiceProperties(
 
     class CurrencyMethods(
         val currencies: String
+    )
+
+    class ContractMethods(
+        val contract: String,
+        val contractEnable: String
+    )
+
+    class DeliveryMethods(
+        val register: String,
+        val complete: String
+    )
+
+    class PaymentMethods(
+        val pay: String
     )
 }

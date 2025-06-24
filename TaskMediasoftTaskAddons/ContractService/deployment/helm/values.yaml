@@ -1,0 +1,21 @@
+namespace: contract-ns
+appName: contract
+
+replicaCount: 1
+
+image:
+  repository: contract-app
+  tag: v12
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8085
+
+ingress:
+  enabled: true
+  className: nginx
+  host: minikube
+  path: /contract/(.*)
+  rewrite: /$1
+  port: 8085

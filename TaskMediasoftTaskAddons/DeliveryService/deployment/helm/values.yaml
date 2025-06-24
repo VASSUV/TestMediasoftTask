@@ -1,0 +1,21 @@
+namespace: delivery-ns
+appName: delivery
+
+replicaCount: 1
+
+image:
+  repository: delivery-app
+  tag: v3
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8086
+
+ingress:
+  enabled: true
+  className: nginx
+  host: minikube
+  path: /delivery/(.*)
+  rewrite: /$1
+  port: 8086

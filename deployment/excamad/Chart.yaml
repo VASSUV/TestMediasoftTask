@@ -1,0 +1,6 @@
+#apiVersion: v2
+#name: excamad
+#version: 1.0.0
+#description: UI for Camunda 7 engine
+#appVersion: "latest"
+#type: application

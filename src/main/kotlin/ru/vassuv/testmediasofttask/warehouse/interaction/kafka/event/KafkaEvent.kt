@@ -15,12 +15,23 @@ import java.util.UUID
     JsonSubTypes.Type(KafkaEvent.Order.Create::class, name = "CREATE_ORDER"),
     JsonSubTypes.Type(KafkaEvent.Order.Update::class, name = "UPDATE_ORDER"),
     JsonSubTypes.Type(KafkaEvent.Order.Delete::class, name = "DELETE_ORDER"),
-    JsonSubTypes.Type(KafkaEvent.Order.UpdateStatus::class, name = "UPDATE_ORDER STATUS"),
+    JsonSubTypes.Type(KafkaEvent.Order.UpdateStatus::class, name = "UPDATE_ORDER_STATUS"),
+    JsonSubTypes.Type(KafkaEvent.Product.DeleteImage::class, name = "DELETE_PRODUCT_IMAGE"),
+    JsonSubTypes.Type(KafkaEvent.Compliance.CheckOrderRequest::class, name = "CHECK_COMPLIANCE_ORDER_REQUEST"),
 )
 sealed interface KafkaEvent {
 
+    /**
+     * Интерфейс для обобщения событий по типу Product
+     */
     sealed interface Product : KafkaEvent {
 
+        /**
+         * Модель события удаления файлов изображений для продукта
+         *
+         * @property productId id продукта
+         * @property keys ключи для доступа к файлам
+         */
         data class DeleteImage(
             val productId: UUID,
             val keys: List<String>
@@ -28,7 +39,26 @@ sealed interface KafkaEvent {
     }
 
     /**
-     * Интерфейс для обощения событий по типу Заказ
+     * Интерфейс для обобщения событий по типу Compliance
+     */
+    sealed interface Compliance : KafkaEvent {
+
+        /**
+         * Модель события с запроса на проверки Compliance
+         *
+         * @property login логин Заказчика
+         * @property inn инн заказчика
+         * @property businessKey бизнес ключ процесса заказа
+         */
+        data class CheckOrderRequest(
+            val login: String,
+            val inn: String,
+            val businessKey: String
+        ): Product
+    }
+
+    /**
+     * Интерфейс для обобщения событий по типу Заказ
      */
     sealed interface Order : KafkaEvent {
 

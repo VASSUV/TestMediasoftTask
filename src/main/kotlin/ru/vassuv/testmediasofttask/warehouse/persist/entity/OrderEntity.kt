@@ -46,5 +46,9 @@ class OrderEntity(
 
     /** Список позиций в заказе. Связь с товарами и их количеством через [OrderProductEntity]. */
     @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val orderProducts: List<OrderProductEntity> = mutableListOf()
+    val orderProducts: List<OrderProductEntity> = mutableListOf(),
+
+    /** Бизнес ключ процесса заказа */
+    @Column
+    var businessKey: String? = null
 )

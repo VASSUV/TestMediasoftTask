@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-init-sql
+  namespace: {{ .Values.namespace }}
+data:
+  init.sql: |
+    -- Пример SQL:
+    CREATE SCHEMA warehouse_app;
+    CREATE USER warehouse_user WITH PASSWORD 'warehouse_pass';
+    GRANT USAGE, CREATE ON SCHEMA warehouse_app TO warehouse_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA warehouse_app GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRUNCATE, TRIGGER ON TABLES TO warehouse_user;
+    GRANT USAGE, CREATE ON SCHEMA public TO warehouse_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRUNCATE, TRIGGER ON TABLES TO warehouse_user;
+    ALTER USER warehouse_user SET search_path TO warehouse_app;
+
+    CREATE SCHEMA camunda_service;
+    CREATE USER camunda_user WITH PASSWORD 'camunda_pass';
+    GRANT USAGE, CREATE ON SCHEMA camunda_service TO camunda_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA camunda_service GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRUNCATE, TRIGGER ON TABLES TO camunda_user;
+    GRANT USAGE, CREATE ON SCHEMA public TO camunda_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRUNCATE, TRIGGER ON TABLES TO camunda_user;
+    ALTER USER camunda_user SET search_path TO camunda_service;
+
+    CREATE SCHEMA currency_service;
+    CREATE USER currency_user WITH PASSWORD 'currency_pass';
+    GRANT USAGE, CREATE ON SCHEMA currency_service TO currency_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA currency_service GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO currency_user;
+    GRANT USAGE, CREATE ON SCHEMA public TO currency_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRUNCATE, TRIGGER ON TABLES TO currency_user;
+    ALTER USER currency_user SET search_path TO currency_service;
+
+    CREATE SCHEMA inn_service;
+    CREATE USER inn_user WITH PASSWORD 'inn_pass';
+    GRANT USAGE, CREATE ON SCHEMA inn_service TO inn_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA inn_service GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO inn_user;
+    GRANT USAGE, CREATE ON SCHEMA public TO inn_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRUNCATE, TRIGGER ON TABLES TO inn_user;
+    ALTER USER inn_user SET search_path TO inn_service;
+
+    CREATE SCHEMA account_number_service;
+    CREATE USER account_number_user WITH PASSWORD 'account_number_pass';
+    GRANT USAGE, CREATE ON SCHEMA account_number_service TO account_number_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA account_number_service GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO account_number_user;
+    GRANT USAGE, CREATE ON SCHEMA public TO account_number_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRUNCATE, TRIGGER ON TABLES TO account_number_user;
+    ALTER USER account_number_user SET search_path TO account_number_service;
+
+    CREATE SCHEMA delivery_service;
+    CREATE USER delivery_user WITH PASSWORD 'delivery_pass';
+    GRANT USAGE, CREATE ON SCHEMA delivery_service TO delivery_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA delivery_service GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO delivery_user;
+    GRANT USAGE, CREATE ON SCHEMA public TO delivery_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRUNCATE, TRIGGER ON TABLES TO delivery_user;
+    ALTER USER delivery_user SET search_path TO delivery_service;
+
+    CREATE SCHEMA contract_service;
+    CREATE USER contract_user WITH PASSWORD 'contract_pass';
+    GRANT USAGE, CREATE ON SCHEMA contract_service TO contract_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA contract_service GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO contract_user;
+    GRANT USAGE, CREATE ON SCHEMA public TO contract_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRUNCATE, TRIGGER ON TABLES TO contract_user;
+    ALTER USER contract_user SET search_path TO contract_service;
+
+    CREATE SCHEMA payment_service;
+    CREATE USER payment_user WITH PASSWORD 'payment_pass';
+    GRANT USAGE, CREATE ON SCHEMA payment_service TO payment_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA payment_service GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO payment_user;
+    GRANT USAGE, CREATE ON SCHEMA public TO payment_user;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, REFERENCES, TRUNCATE, TRIGGER ON TABLES TO payment_user;
+    ALTER USER payment_user SET search_path TO payment_service;

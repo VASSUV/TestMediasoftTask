@@ -4,8 +4,10 @@ import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateOrderItemR
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateOrderRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderItemRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.response.ConfirmOrderResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.OrderProductItemResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.OrderResponse
+import ru.vassuv.testmediasofttask.warehouse.service.model.ConfirmOrderResult
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedOrder
 import ru.vassuv.testmediasofttask.warehouse.service.model.CreatedOrderItem
 import ru.vassuv.testmediasofttask.warehouse.service.model.OrderData
@@ -51,4 +53,10 @@ private fun OrderProductItem.toOrderProductItemResponse() = OrderProductItemResp
      name = this.name,
      quantity = this.quantity,
      price = this.price,
+)
+
+
+fun ConfirmOrderResult.toConfirmOrderResponse() = ConfirmOrderResponse(
+    businessKey = this.businessKey,
+    status = this.status,
 )

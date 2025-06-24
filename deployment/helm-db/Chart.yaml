@@ -1,0 +1,15 @@
+apiVersion: v2
+name: warehouse-db
+version: 1.0.0
+description: WarehouseDB
+type: application
+maintainers:
+  - name: Vassiliy Somov
+    email: vassuv@ya.ru
+appVersion: 1.0.0
+keywords:
+  - warehouse
+  - backend
+  - springboot
+sources:
+  - https://github.com/VASSUV/TestMediasoftTask

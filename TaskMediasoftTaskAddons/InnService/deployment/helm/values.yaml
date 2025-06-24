@@ -1,0 +1,21 @@
+namespace: inn-ns
+appName: inn
+
+replicaCount: 2
+
+image:
+  repository: inn-app
+  tag: v1
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8083
+
+ingress:
+  enabled: true
+  className: nginx
+  host: minikube
+  path: /inn/(.*)
+  rewrite: /$1
+  port: 8083

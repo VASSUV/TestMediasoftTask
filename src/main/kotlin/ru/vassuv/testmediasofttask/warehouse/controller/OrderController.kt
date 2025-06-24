@@ -9,6 +9,7 @@ import ru.vassuv.testmediasofttask.warehouse.config.security.WarehousePrincipal
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateOrderRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderStatusRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.response.ConfirmOrderResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.OrderResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductOrderReportInfoResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
@@ -112,16 +113,16 @@ interface OrderController {
     fun cancelOrder(principal: WarehousePrincipal, orderId: UUID): ResponseEntity<Void>
 
     /**
-     * Подтверждение заказа (реализация будет позже).
+     * Подтверждение заказа.
      *
      * @param orderId идентификатор заказа.
-     * @return HTTP-ответ со статусом NO_CONTENT.
+     * @return Результат подтверждения заказа.
      */
     @Operation(
         summary = "Подтверждение заказа",
         description = "Подтверждает заказ, реализация функционала запланирована на будущее."
     )
-    fun confirmOrder(orderId: UUID): ResponseEntity<Void>
+    fun confirmOrder(orderId: UUID): ResponseEntity<ConfirmOrderResponse>
 
     /**
      * Обновляет статус заказа (используется внутренними процессами).

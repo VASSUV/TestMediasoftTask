@@ -1,0 +1,52 @@
+namespace: warehouse-ns
+appName: warehouse
+
+replicaCount: 1
+
+secret:
+  name: warehouse-secret
+
+image:
+  repository: warehouse-app
+  tag: v144
+  pullPolicy: IfNotPresent
+
+config:
+  innServiceHost: http://inn-inn-service.inn-ns.svc.cluster.local:8083
+  accountNumberServiceHost: http://account-number-account-number-service.account-number-ns.svc.cluster.local:8084
+  currencyServiceHost: http://currency-currency-service.currency-ns.svc.cluster.local:8082
+  contractServiceHost: http://contract-contract-service.contract-ns.svc.cluster.local:8085
+  deliveryServiceHost: http://delivery-delivery-service.delivery-ns.svc.cluster.local:8086
+  paymentServiceHost: http://payment-payment-service.payment-ns.svc.cluster.local:8087
+  warehouseDatabaseHost: jdbc:postgresql://postgresql-warehouse-postgres-service.warehouse-db-ns.svc.cluster.local:5432
+  kafkaServiceHost: kafka-kraft-kafka.default.svc.cluster.local:9092
+
+ingress:
+  enabled: true
+  className: nginx
+  host: minikube
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+
+camunda:
+  username: demo
+  password: demo
+  db:
+    username: camunda_user
+    password: camunda_pass
+    scheme: camunda_service
+
+service:
+  type: LoadBalancer
+
+  db:
+    name: postgresql-warehouse-postgres-service
+    host: "postgresql-warehouse-postgres-service"
+    namespace: "warehouse-db-ns"
+    type: ClusterIP
+    port: 5432
+    sport: "5432"
+    dbname: warehouse_db
+    dbschema: warehouse_app
+    username: warehouse_user
+    password: warehouse_pass

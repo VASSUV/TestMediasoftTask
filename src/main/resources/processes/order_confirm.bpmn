@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0zj7vc8" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.35.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.23.0">
+  <bpmn:collaboration id="Collaboration_06tbgx7">
+    <bpmn:participant id="Participant_Order_Confirmation" name="Order Confirmation" processRef="ProcessOrderConfirmation" />
+  </bpmn:collaboration>
+  <bpmn:process id="ProcessOrderConfirmation" name="Process order confirmation" isExecutable="true" camunda:historyTimeToLive="180">
+    <bpmn:laneSet id="LaneSet_1rcd8b8">
+      <bpmn:lane id="Lane_08jat7v">
+        <bpmn:flowNodeRef>StartConfirmOrderEvent</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivitySetStatusProcessing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivityCheckCompliance</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_0slmyvs</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivitySetStatusRejected</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0iibp11</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivityRegisterContract</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivityRegisterDelivery</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivityMakePayment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_0eg6dk9</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivitySetStatusCanceled</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivityCancelDelivery</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivitySetStatusDone</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_01hmsim</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivityCompleteDelivery</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_1bc3q8f</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivitySetStatusConfirmed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivityEnableContract</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0veeu9a</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>ActivityCancelContract</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EventCheckComplianceResult</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartConfirmOrderEvent" name="Start Confirm">
+      <bpmn:outgoing>Flow_0uw5emw</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="ActivitySetStatusProcessing" name="Set status PROCESSING" camunda:delegateExpression="#{setStatusProcessingDelegate}">
+      <bpmn:extensionElements />
+      <bpmn:incoming>Flow_0uw5emw</bpmn:incoming>
+      <bpmn:outgoing>Flow_18jnxfe</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ActivityCheckCompliance" name="Check Compliance" camunda:delegateExpression="#{checkComplianceDelegate}">
+      <bpmn:incoming>Flow_18jnxfe</bpmn:incoming>
+      <bpmn:outgoing>Flow_1udd5th</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_0slmyvs" camunda:asyncBefore="true" default="Flow_03wlgnh">
+      <bpmn:incoming>Flow_1jaz3fq</bpmn:incoming>
+      <bpmn:outgoing>Flow_03wlgnh</bpmn:outgoing>
+      <bpmn:outgoing>Flow_0nii2ca</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ActivitySetStatusRejected" name="Set status REJECTED" camunda:delegateExpression="#{setStatusRejectedDelegate}">
+      <bpmn:incoming>Flow_0nii2ca</bpmn:incoming>
+      <bpmn:outgoing>Flow_1mho112</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0iibp11" name="Process rejected">
+      <bpmn:incoming>Flow_1mho112</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="ActivityRegisterContract" name="Register contract" camunda:delegateExpression="#{registerContractDelegate}">
+      <bpmn:incoming>Flow_03wlgnh</bpmn:incoming>
+      <bpmn:outgoing>Flow_1vv15iz</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ActivityRegisterDelivery" name="Register delivery" camunda:delegateExpression="#{registerDeliveryDelegate}">
+      <bpmn:incoming>Flow_1vv15iz</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ofofft</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ActivityMakePayment" name="Make payment" camunda:delegateExpression="#{makePaymentDelegate}">
+      <bpmn:incoming>Flow_1ofofft</bpmn:incoming>
+      <bpmn:outgoing>Flow_1v09w8r</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_0eg6dk9" camunda:asyncBefore="true" default="Flow_1lr0tkh">
+      <bpmn:incoming>Flow_1v09w8r</bpmn:incoming>
+      <bpmn:outgoing>Flow_04634pe</bpmn:outgoing>
+      <bpmn:outgoing>Flow_1lr0tkh</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ActivitySetStatusCanceled" name="Set status CANCELED" camunda:delegateExpression="#{setStatusCanceledDelegate}">
+      <bpmn:incoming>Flow_04634pe</bpmn:incoming>
+      <bpmn:outgoing>Flow_0pp75l5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ActivityCancelDelivery" name="Cancel Delivery" camunda:delegateExpression="#{cancelDeliveryDelegate}">
+      <bpmn:incoming>Flow_0pp75l5</bpmn:incoming>
+      <bpmn:outgoing>Flow_0t2pr3h</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ActivitySetStatusDone" name="Set status DONE" camunda:delegateExpression="#{setStatusDoneDelegate}">
+      <bpmn:incoming>Flow_03vixkq</bpmn:incoming>
+      <bpmn:outgoing>Flow_092dw2d</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_01hmsim" name="Process ended">
+      <bpmn:incoming>Flow_092dw2d</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="ActivityCompleteDelivery" name="Complete delivery" camunda:delegateExpression="#{completeDeliveryDelegate}">
+      <bpmn:incoming>Flow_1hfkkc7</bpmn:incoming>
+      <bpmn:outgoing>Flow_03vixkq</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="Event_1bc3q8f" name="Wait for delivery complete" camunda:asyncBefore="true">
+      <bpmn:incoming>Flow_1qqyadk</bpmn:incoming>
+      <bpmn:outgoing>Flow_1hfkkc7</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_0r66p4u" messageRef="Message_2se0q7k" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:serviceTask id="ActivitySetStatusConfirmed" name="Set status CONFIRMED" camunda:delegateExpression="#{setStatusConfirmedDelegate}">
+      <bpmn:incoming>Flow_0cwgs6o</bpmn:incoming>
+      <bpmn:outgoing>Flow_1qqyadk</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ActivityEnableContract" name="Enable contract" camunda:delegateExpression="#{enableContractDelegate}">
+      <bpmn:incoming>Flow_1lr0tkh</bpmn:incoming>
+      <bpmn:outgoing>Flow_0cwgs6o</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="Event_0veeu9a" name="Process canceled">
+      <bpmn:incoming>Flow_1gfn1es</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="ActivityCancelContract" name="Cancel contract" camunda:delegateExpression="#{cancelContractDelegate}">
+      <bpmn:incoming>Flow_0t2pr3h</bpmn:incoming>
+      <bpmn:outgoing>Flow_1gfn1es</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_0uw5emw" sourceRef="StartConfirmOrderEvent" targetRef="ActivitySetStatusProcessing" />
+    <bpmn:sequenceFlow id="Flow_18jnxfe" sourceRef="ActivitySetStatusProcessing" targetRef="ActivityCheckCompliance" />
+    <bpmn:sequenceFlow id="Flow_03wlgnh" sourceRef="Gateway_0slmyvs" targetRef="ActivityRegisterContract" />
+    <bpmn:sequenceFlow id="Flow_0nii2ca" sourceRef="Gateway_0slmyvs" targetRef="ActivitySetStatusRejected">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${isComplianceOk == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1mho112" sourceRef="ActivitySetStatusRejected" targetRef="Event_0iibp11" />
+    <bpmn:sequenceFlow id="Flow_1vv15iz" sourceRef="ActivityRegisterContract" targetRef="ActivityRegisterDelivery" />
+    <bpmn:sequenceFlow id="Flow_1ofofft" sourceRef="ActivityRegisterDelivery" targetRef="ActivityMakePayment" />
+    <bpmn:sequenceFlow id="Flow_1v09w8r" sourceRef="ActivityMakePayment" targetRef="Gateway_0eg6dk9" />
+    <bpmn:sequenceFlow id="Flow_04634pe" sourceRef="Gateway_0eg6dk9" targetRef="ActivitySetStatusCanceled">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${paymentSuccess == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_1lr0tkh" sourceRef="Gateway_0eg6dk9" targetRef="ActivityEnableContract" />
+    <bpmn:sequenceFlow id="Flow_0pp75l5" sourceRef="ActivitySetStatusCanceled" targetRef="ActivityCancelDelivery" />
+    <bpmn:sequenceFlow id="Flow_0t2pr3h" sourceRef="ActivityCancelDelivery" targetRef="ActivityCancelContract" />
+    <bpmn:sequenceFlow id="Flow_03vixkq" sourceRef="ActivityCompleteDelivery" targetRef="ActivitySetStatusDone" />
+    <bpmn:sequenceFlow id="Flow_092dw2d" sourceRef="ActivitySetStatusDone" targetRef="Event_01hmsim" />
+    <bpmn:sequenceFlow id="Flow_1hfkkc7" sourceRef="Event_1bc3q8f" targetRef="ActivityCompleteDelivery" />
+    <bpmn:sequenceFlow id="Flow_1qqyadk" sourceRef="ActivitySetStatusConfirmed" targetRef="Event_1bc3q8f" />
+    <bpmn:sequenceFlow id="Flow_0cwgs6o" sourceRef="ActivityEnableContract" targetRef="ActivitySetStatusConfirmed" />
+    <bpmn:sequenceFlow id="Flow_1gfn1es" sourceRef="ActivityCancelContract" targetRef="Event_0veeu9a" />
+    <bpmn:intermediateCatchEvent id="EventCheckComplianceResult" name="Wait for check compliance" camunda:asyncBefore="true">
+      <bpmn:incoming>Flow_1udd5th</bpmn:incoming>
+      <bpmn:outgoing>Flow_1jaz3fq</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1hfkha9" messageRef="Message_2g69q4e" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_1udd5th" sourceRef="ActivityCheckCompliance" targetRef="EventCheckComplianceResult" />
+    <bpmn:sequenceFlow id="Flow_1jaz3fq" sourceRef="EventCheckComplianceResult" targetRef="Gateway_0slmyvs" />
+  </bpmn:process>
+  <bpmn:message id="Message_2g69q4e" name="MessageWaitForCheckCompliance" />
+  <bpmn:message id="Message_2se0q7k" name="MessageWaitForDeliveryComplete" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_06tbgx7">
+      <bpmndi:BPMNShape id="Participant_0osz6m5_di" bpmnElement="Participant_Order_Confirmation" isHorizontal="true">
+        <dc:Bounds x="141" y="80" width="1628" height="695" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_08jat7v_di" bpmnElement="Lane_08jat7v" isHorizontal="true">
+        <dc:Bounds x="171" y="80" width="1598" height="695" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartConfirmOrderEvent">
+        <dc:Bounds x="201" y="257" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="188" y="300" width="65" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_03yy0wg_di" bpmnElement="ActivitySetStatusProcessing">
+        <dc:Bounds x="259" y="235" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1pt70z3_di" bpmnElement="ActivityCheckCompliance">
+        <dc:Bounds x="379" y="235" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0slmyvs_di" bpmnElement="Gateway_0slmyvs" isMarkerVisible="true">
+        <dc:Bounds x="574" y="250" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1yrvkii_di" bpmnElement="ActivitySetStatusRejected">
+        <dc:Bounds x="549" y="345" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0iibp11_di" bpmnElement="Event_0iibp11">
+        <dc:Bounds x="581" y="457" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="562" y="500" width="82" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1qp2ii3_di" bpmnElement="ActivityRegisterContract">
+        <dc:Bounds x="659" y="235" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0so3wsd_di" bpmnElement="ActivityRegisterDelivery">
+        <dc:Bounds x="779" y="235" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_10rahyq_di" bpmnElement="ActivityMakePayment">
+        <dc:Bounds x="899" y="235" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0eg6dk9_di" bpmnElement="Gateway_0eg6dk9" isMarkerVisible="true">
+        <dc:Bounds x="1024" y="250" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_040f86b_di" bpmnElement="ActivitySetStatusCanceled">
+        <dc:Bounds x="999" y="345" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ftnl5q_di" bpmnElement="ActivityCancelDelivery">
+        <dc:Bounds x="999" y="445" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_15tedg7_di" bpmnElement="ActivitySetStatusDone">
+        <dc:Bounds x="1549" y="235" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_01hmsim_di" bpmnElement="Event_01hmsim">
+        <dc:Bounds x="1681" y="257" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1663" y="300" width="74" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0zmd8qg_di" bpmnElement="ActivityCompleteDelivery">
+        <dc:Bounds x="1429" y="235" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_09g11yp_di" bpmnElement="Event_1bc3q8f">
+        <dc:Bounds x="1361" y="257" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1342" y="300" width="79" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_10e73y5_di" bpmnElement="ActivitySetStatusConfirmed">
+        <dc:Bounds x="1239" y="235" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jul81z_di" bpmnElement="ActivityEnableContract">
+        <dc:Bounds x="1109" y="235" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0veeu9a_di" bpmnElement="Event_0veeu9a">
+        <dc:Bounds x="1031" y="647" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1008" y="690" width="87" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_060s3mk_di" bpmnElement="ActivityCancelContract">
+        <dc:Bounds x="999" y="545" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1c1k6ju_di" bpmnElement="EventCheckComplianceResult">
+        <dc:Bounds x="512" y="257" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="497" y="300" width="70" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0uw5emw_di" bpmnElement="Flow_0uw5emw">
+        <di:waypoint x="237" y="275" />
+        <di:waypoint x="259" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_18jnxfe_di" bpmnElement="Flow_18jnxfe">
+        <di:waypoint x="359" y="275" />
+        <di:waypoint x="379" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03wlgnh_di" bpmnElement="Flow_03wlgnh">
+        <di:waypoint x="624" y="275" />
+        <di:waypoint x="659" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0nii2ca_di" bpmnElement="Flow_0nii2ca">
+        <di:waypoint x="599" y="300" />
+        <di:waypoint x="599" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1mho112_di" bpmnElement="Flow_1mho112">
+        <di:waypoint x="599" y="425" />
+        <di:waypoint x="599" y="457" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1vv15iz_di" bpmnElement="Flow_1vv15iz">
+        <di:waypoint x="759" y="275" />
+        <di:waypoint x="779" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ofofft_di" bpmnElement="Flow_1ofofft">
+        <di:waypoint x="879" y="275" />
+        <di:waypoint x="899" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1v09w8r_di" bpmnElement="Flow_1v09w8r">
+        <di:waypoint x="999" y="275" />
+        <di:waypoint x="1024" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04634pe_di" bpmnElement="Flow_04634pe">
+        <di:waypoint x="1049" y="300" />
+        <di:waypoint x="1049" y="345" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1lr0tkh_di" bpmnElement="Flow_1lr0tkh">
+        <di:waypoint x="1074" y="275" />
+        <di:waypoint x="1109" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0pp75l5_di" bpmnElement="Flow_0pp75l5">
+        <di:waypoint x="1049" y="425" />
+        <di:waypoint x="1049" y="445" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0t2pr3h_di" bpmnElement="Flow_0t2pr3h">
+        <di:waypoint x="1049" y="525" />
+        <di:waypoint x="1049" y="545" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03vixkq_di" bpmnElement="Flow_03vixkq">
+        <di:waypoint x="1529" y="275" />
+        <di:waypoint x="1549" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_092dw2d_di" bpmnElement="Flow_092dw2d">
+        <di:waypoint x="1649" y="275" />
+        <di:waypoint x="1681" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hfkkc7_di" bpmnElement="Flow_1hfkkc7">
+        <di:waypoint x="1397" y="275" />
+        <di:waypoint x="1429" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qqyadk_di" bpmnElement="Flow_1qqyadk">
+        <di:waypoint x="1339" y="275" />
+        <di:waypoint x="1361" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0cwgs6o_di" bpmnElement="Flow_0cwgs6o">
+        <di:waypoint x="1209" y="275" />
+        <di:waypoint x="1239" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gfn1es_di" bpmnElement="Flow_1gfn1es">
+        <di:waypoint x="1049" y="625" />
+        <di:waypoint x="1049" y="647" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1udd5th_di" bpmnElement="Flow_1udd5th">
+        <di:waypoint x="479" y="275" />
+        <di:waypoint x="512" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jaz3fq_di" bpmnElement="Flow_1jaz3fq">
+        <di:waypoint x="548" y="275" />
+        <di:waypoint x="574" y="275" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

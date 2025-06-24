@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: excamad
+  namespace: warehouse-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: excamad
+  template:
+    metadata:
+      labels:
+        app: excamad
+    spec:
+      containers:
+        - name: excamad
+          image: kotovdenis/excamad:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: CAMUNDA_ENGINE_REST
+              value: http://warehouse-warehouse-app:8088/engine-rest

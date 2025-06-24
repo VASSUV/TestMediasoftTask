@@ -13,6 +13,9 @@ enum class OrderStatus {
     /** Отменённый заказ */
     CANCELED,
 
+    /** Заказ в обработке */
+    PROCESSING,
+
     /** Выполненный заказ */
     DONE,
 

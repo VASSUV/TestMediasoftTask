@@ -1,0 +1,21 @@
+namespace: account-number-ns
+appName: account-number
+
+replicaCount: 2
+
+image:
+  repository: account-number-app
+  tag: v1
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8084
+
+ingress:
+  enabled: true
+  className: nginx
+  host: minikube
+  path: /account-number/(.*)
+  rewrite: /$1
+  port: 8084

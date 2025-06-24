@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import ru.vassuv.testmediasofttask.warehouse.config.security.WarehousePrincipal
+import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toConfirmOrderResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toCreatedOrder
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toOrderResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toProductOrderReportInfoResponse
@@ -21,6 +22,7 @@ import ru.vassuv.testmediasofttask.warehouse.controller.mappers.toUpdatedOrder
 import ru.vassuv.testmediasofttask.warehouse.controller.request.CreateOrderRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderRequest
 import ru.vassuv.testmediasofttask.warehouse.controller.request.UpdateOrderStatusRequest
+import ru.vassuv.testmediasofttask.warehouse.controller.response.ConfirmOrderResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.OrderResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.ProductOrderReportInfoResponse
 import ru.vassuv.testmediasofttask.warehouse.controller.response.UuidResponse
@@ -154,17 +156,17 @@ class OrderControllerImpl(
     }
 
     /**
-     * Подтверждение заказа (реализация отложена на будущее).
+     * Подтверждение заказа.
      *
      * @param orderId идентификатор заказа.
-     * @return HTTP-ответ со статусом NOT_IMPLEMENTED.
+     * @return Результат подтверждения заказа.
      */
     @PreAuthorize(ROLE_MANAGER)
     @Suppress("ForbiddenComment")
     @PostMapping("/{orderId}/confirm")
-    override fun confirmOrder(@PathVariable orderId: UUID): ResponseEntity<Void> {
-        // TODO: Реализовать подтверждение заказа
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build()
+    override fun confirmOrder(@PathVariable orderId: UUID): ResponseEntity<ConfirmOrderResponse> {
+        val result = orderService.confirmOrder(orderId)
+        return ResponseEntity.ok(result.toConfirmOrderResponse())
     }
 
     /**

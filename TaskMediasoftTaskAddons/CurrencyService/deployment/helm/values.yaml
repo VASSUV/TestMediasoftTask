@@ -1,0 +1,21 @@
+namespace: currency-ns
+appName: currency
+
+replicaCount: 2
+
+image:
+  repository: currency-app
+  tag: v1
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8082
+
+ingress:
+  enabled: true
+  className: nginx
+  host: minikube
+  path: /currency/(.*)
+  rewrite: /$1
+  port: 8082
